@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -109,7 +110,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
                   : 'bg-gray-50 text-gray-800 rounded-2xl rounded-tl-none border border-gray-100'
               }`}>
                 <div className={`prose prose-lg max-w-none ${msg.sender === 'user' ? 'prose-invert' : 'prose-green'}`}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text ?? ""}</ReactMarkdown>
                 </div>
                 
                 {msg.sources && msg.sources.length > 0 && (

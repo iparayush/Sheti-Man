@@ -2,8 +2,10 @@
 import { GoogleGenAI, Chat, GenerateContentResponse, Modality, Type } from "@google/genai";
 import { RecommendationFormState, CalculatorFormState, Weather, Language } from '../types';
 
-// Always use process.env.API_KEY directly as per guidelines.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Ensure the API key is a string to satisfy strict TypeScript build checks.
+const apiKey = process.env.API_KEY || "";
+const ai = new GoogleGenAI({ apiKey });
+
 let chat: Chat | null = null;
 let currentChatLanguage: Language | null = null;
 
@@ -35,7 +37,7 @@ export const getFertilizerRecommendation = async (formData: RecommendationFormSt
     contents: prompt,
     config: { tools: [{ googleSearch: {} }] },
   });
-  return { text: response.text, sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
+  return { text: response.text ?? "", sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
 };
 
 export const analyzeCropImage = async (imageFile: File, promptText: string, language: Language) => {
@@ -48,7 +50,7 @@ export const analyzeCropImage = async (imageFile: File, promptText: string, lang
     model: 'gemini-2.5-flash-image',
     contents: { parts: [imagePart, { text: prompt }] },
   });
-  return response.text;
+  return response.text ?? "";
 };
 
 export const calculateFertilizer = async (formData: CalculatorFormState, language: Language) => {
@@ -63,7 +65,7 @@ export const calculateFertilizer = async (formData: CalculatorFormState, languag
     contents: prompt,
     config: { tools: [{ googleSearch: {} }] },
   });
-  return { text: response.text, sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
+  return { text: response.text ?? "", sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
 };
 
 export const getWeatherInfo = async (lat: number, lng: number, language: Language): Promise<Weather> => {
@@ -92,7 +94,7 @@ export const getWeatherInfo = async (lat: number, lng: number, language: Languag
       }
     }
   });
-  return JSON.parse(response.text) as Weather;
+  return JSON.parse(response.text ?? "{}") as Weather;
 };
 
 export const findLocalSuppliers = async (type: string, lat: number, lng: number, lang: Language) => {
@@ -106,7 +108,7 @@ export const findLocalSuppliers = async (type: string, lat: number, lng: number,
       toolConfig: { retrievalConfig: { latLng: { latitude: lat, longitude: lng } } }
     },
   });
-  return { text: response.text, sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] };
+  return { text: response.text ?? "", sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] };
 };
 
 export const textToSpeech = async (text: string) => {
@@ -137,5 +139,5 @@ export const sendMessageToChat = async (message: string, language: Language) => 
     currentChatLanguage = language;
   }
   const response: GenerateContentResponse = await chat.sendMessage({ message });
-  return { text: response.text, sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
+  return { text: response.text ?? "", sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
 };

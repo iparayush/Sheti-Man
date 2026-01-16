@@ -1,3 +1,4 @@
+
 {
   "name": "sheti-man-ai",
   "private": true,
@@ -9,12 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@google/genai": "^1.22.0",
+    "@google/genai": "^1.37.0",
     "@supabase/supabase-js": "^2.48.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-markdown": "^8.0.7",
-    "remark-gfm": "^3.0.1",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "qrcode": "^1.5.3"
   },
   "devDependencies": {
