@@ -1,3 +1,4 @@
+
 export const translations: any = {
   header: {
     subtitle: { en: 'AI Sustainable Farming', hi: 'एआई सतत खेती', mr: 'एआय शाश्वत शेती' },
@@ -9,12 +10,11 @@ export const translations: any = {
     welcome: { en: 'Namaste, Farmer!', hi: 'नमस्ते, किसान भाई!', mr: 'नमस्ते, शेतकरी मित्र!' },
     subheading: { en: 'Your intelligent assistant for organic growth.', hi: 'जैविक विकास के लिए आपका बुद्धिमान सहायक।', mr: 'सेंद्रिय विकासासाठी तुमचा बुद्धिमान सहाय्यक.' },
     cards: {
-      recommendation: { title: { en: 'Fertilizer', hi: 'उर्वरक सलाह', mr: 'खत सल्ला' }, description: { en: 'AI Plan', hi: 'योजना', mr: 'नियोजन' } },
-      cropDoctor: { title: { en: 'Disease Scan', hi: 'रोग स्कैन', mr: 'रोग स्कॅन' }, description: { en: 'Scan & Cure', hi: 'इलाज', mr: 'उपचार' } },
-      farmTasks: { title: { en: 'Tasks', hi: 'कार्य', mr: 'कामे' }, description: { en: 'Daily Log', hi: 'लॉग', mr: 'नोंद' } },
+      recommendation: { title: { en: 'Fertilizer AI Plan', hi: 'उर्वरक एआई योजना', mr: 'खत एआय योजना' }, description: { en: 'AI Plan', hi: 'योजना', mr: 'नियोजन' } },
+      cropDoctor: { title: { en: 'Disease Scan', hi: 'रोग स्कैन - इलाज', mr: 'रोग स्कॅन - उपचार' }, description: { en: 'Diagnosis', hi: 'इलाज', mr: 'उपचार' } },
+      farmTasks: { title: { en: 'कामे - नोंद', hi: 'कार्य - नोट', mr: 'कामे - नोंद' }, description: { en: 'Farm Log', hi: 'नोंद', mr: 'नोंद' } },
       calculator: { title: { en: 'Calculator', hi: 'कैलकुलेटर', mr: 'कॅल्क्युलेटर' }, description: { en: 'Dosage', hi: 'खुराक', mr: 'डोस' } },
-      chatbot: { title: { en: 'Ask Expert', hi: 'विशेषज्ञ', mr: 'तज्ञ' }, description: { en: 'Chat AI', hi: 'चैट', mr: 'चॅट' } },
-      store: { title: { en: 'Store', hi: 'दुकान', mr: 'दुकान' }, description: { en: 'Organic Shop', hi: 'जैविक सामान', mr: 'सेंद्रिय वस्तू' } },
+      chatbot: { title: { en: 'तज्ञ - चॅट', hi: 'विशेषज्ञ चैट', mr: 'तज्ञ - चॅट' }, description: { en: 'AI Expert', hi: 'तज्ञ', mr: 'तज्ञ' } },
     }
   },
   loginPage: {
@@ -71,58 +71,15 @@ export const translations: any = {
     greeting: { en: 'Hello! How can I help with your farm today?', hi: 'नमस्ते! आज मैं आपकी खेती में क्या मदद कर सकता हूँ?', mr: 'नमस्कार! आज मी तुमच्या शेतीमध्ये कशी मदत करू शकतो?' },
     placeholder: { en: 'Ask me anything about farming...', hi: 'खेती के बारे में कुछ भी पूछें...', mr: 'शेतीबद्दल काहीही विचारा...' }
   },
-  store: {
-    title: { en: 'Organic Marketplace', hi: 'जैविक बाजार', mr: 'सेंद्रिय बाजारपेठ' },
-    supplierLabel: { en: 'Sold by:', hi: 'विक्रेता:', mr: 'विक्रेता:' },
-    addToCart: { en: 'Add to Cart', hi: 'कार्ट में डालें', mr: 'कार्टमध्ये जोडा' }
-  },
-  cart: {
-    title: { en: 'Your Shopping Cart', hi: 'आपकी कार्ट', mr: 'तुमची कार्ट' },
-    empty: { en: 'Cart is empty', hi: 'कार्ट खाली है', mr: 'कार्ट रिकामी आहे' },
-    emptyHint: { en: 'Add organic products to start.', hi: 'शुरू करने के लिए जैविक उत्पाद जोड़ें।', mr: 'सुरू करण्यासाठी सेंद्रिय उत्पादने जोडा.' },
-    each: { en: 'each', hi: 'प्रति', mr: 'प्रत्येक' },
-    remove: { en: 'Remove', hi: 'हटाएं', mr: 'काढून टाका' },
-    total: { en: 'Total Amount', hi: 'कुल राशि', mr: 'एकूण रक्कम' },
-    checkout: { en: 'Proceed to Checkout', hi: 'चेकआउट करें', mr: 'चेकआउट करा' }
-  },
-  checkoutPage: {
-    title: { en: 'Checkout', hi: 'चेकआउट', mr: 'चेकआउट' },
-    orderPlacedSuccess: { en: 'Order Placed!', hi: 'ऑर्डर सफल!', mr: 'ऑर्डर यशस्वी!' },
-    orderPlacedDescription: { en: 'Thank you for choosing organic.', hi: 'जैविक चुनने के लिए धन्यवाद।', mr: 'सेंद्रिय निवडल्याबद्दल धन्यवाद.' },
-    backToDashboardButton: { en: 'Back Home', hi: 'होम पर जाएं', mr: 'होमवर जा' },
-    cartEmpty: { en: 'Your cart is empty', hi: 'आपकी कार्ट खाली है', mr: 'तुमची कार्ट रिकामी आहे' },
-    shippingTitle: { en: 'Shipping Details', hi: 'शिपिंग विवरण', mr: 'शिपिंग तपशील' },
-    fullNameLabel: { en: 'Full Name', hi: 'पूरा नाम', mr: 'पूर्ण नाव' },
-    addressLabel: { en: 'Address', hi: 'पता', mr: 'पत्ता' },
-    cityLabel: { en: 'City', hi: 'शहर', mr: 'शहर' },
-    pincodeLabel: { en: 'Pincode', hi: 'पिनकोड', mr: 'पिनकोड' },
-    placeOrderButton: { en: 'Confirm Order', hi: 'ऑर्डर कन्फर्म करें', mr: 'ऑर्डर कन्फर्म करा' },
-    summaryTitle: { en: 'Order Summary', hi: 'ऑर्डर सारांश', mr: 'ऑर्डर सारांश' }
-  },
-  orderHistoryPage: {
-    title: { en: 'My Orders', hi: 'मेरे ऑर्डर', mr: 'माझे ऑर्डर' },
-    noOrders: { en: 'No orders yet.', hi: 'अभी तक कोई ऑर्डर नहीं।', mr: 'अद्याप एकही ऑर्डर नाही.' },
-    orderId: { en: 'Order ID', hi: 'ऑर्डर आईडी', mr: 'ऑर्डर आयडी' },
-    date: { en: 'Date', hi: 'तारीख', mr: 'तारीख' },
-    total: { en: 'Total', hi: 'कुल', mr: 'एकूण' },
-    status: { en: 'Status', hi: 'स्थिति', mr: 'स्थिती' },
-    items: { en: 'Items', hi: 'सामान', mr: 'वस्तू' },
-    statusPending: { en: 'Pending', hi: 'लंबित', mr: 'प्रलंबित' },
-    statusShipped: { en: 'Shipped', hi: 'भेज दिया गया', mr: 'पाठवले गेले' },
-    statusDelivered: { en: 'Delivered', hi: 'पहुंच गया', mr: 'पोहोचले' }
-  },
   farmTasksPage: {
     title: { en: 'Farm Management', hi: 'फार्म प्रबंधन', mr: 'शेती व्यवस्थापन' },
-    addTaskPlaceholder: { en: 'Enter new task...', hi: 'नया कार्य लिखें...', mr: 'नवीन कार्य लिहा...' },
+    addTaskPlaceholder: { en: 'Write a task or note...', hi: 'कोई कार्य या नोट लिखें...', mr: 'कार्य किंवा टीप लिहा...' },
     dueDateLabel: { en: 'Due Date', hi: 'नियत तारीख', mr: 'शेवटची तारीख' },
     noTasks: { en: 'All caught up!', hi: 'सब हो गया!', mr: 'सर्व कामे पूर्ण!' },
-    overdue: { en: 'Overdue!', hi: 'देरी!', mr: 'उशीर झाला!' }
-  },
-  qrCodeModal: {
-    title: { en: 'Share App', hi: 'ऐप साझा करें', mr: 'अॅप शेअर करा' },
-    instruction: { en: 'Scan this code with another phone to open Sheti Man AI.', hi: 'खेती मैन एआई खोलने के लिए इस कोड को दूसरे फोन से स्कैन करें।', mr: 'शेती मॅन एआय उघडण्यासाठी दुसऱ्या फोनने हा कोड स्कॅन करा.' }
+    overdue: { en: 'Overdue!', hi: 'देरी!', mr: 'उशीर झाला!' },
+    addNote: { en: 'Add Note', hi: 'टीप जोडा', mr: 'टीप जोडा' }
   },
   footer: {
-    text: { en: 'Sheti Man AI - Smart Organic Farming', hi: 'खेती मैन एआई - स्मार्ट जैविक खेती', mr: 'शेती मॅन एआय - स्मार्ट सेंद्रिय शेती' }
+    text: { en: '© 2026 Ayush Ipar. All rights reserved.', hi: '© 2026 आयुष इपर। सर्वाधिकार सुरक्षित।', mr: '© २०२६ आयुष इपर. सर्व हक्क राखीव.' }
   }
 };

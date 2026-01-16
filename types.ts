@@ -1,3 +1,4 @@
+
 export type Language = 'en' | 'hi' | 'mr';
 
 export interface RecommendationFormState {
@@ -22,6 +23,7 @@ export interface ChatMessage {
   sources?: any[];
 }
 
+// Added fix for missing Page enum members: STORE, CHECKOUT, ORDER_HISTORY
 export enum Page {
   DASHBOARD,
   RECOMMENDATION,
@@ -31,7 +33,7 @@ export enum Page {
   FARM_TASKS,
   STORE,
   CHECKOUT,
-  ORDERS,
+  ORDER_HISTORY
 }
 
 export interface Weather {
@@ -57,6 +59,7 @@ export interface User {
   email: string;
   role: Role;
   picture?: string;
+  phone?: string;
 }
 
 export interface Task {
@@ -67,6 +70,7 @@ export interface Task {
   userId: string;
 }
 
+// Added fix for missing Product interface
 export interface Product {
   id: number;
   name: string;
@@ -76,12 +80,15 @@ export interface Product {
   supplierName: string;
 }
 
+// Added fix for missing CartItem interface
 export interface CartItem extends Product {
   quantity: number;
 }
 
+// Added fix for missing OrderStatus type
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered';
 
+// Added fix for missing Order interface
 export interface Order {
   id: string;
   items: CartItem[];

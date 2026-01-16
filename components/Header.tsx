@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { ShetiManLogo, QRIcon, UserIcon, TrashIcon, ShoppingCartIcon } from './icons';
+import { ShetiManLogo, QRIcon, UserIcon } from './icons';
 import { Page, Language } from '../types';
 import { useLocalization } from '../context/LocalizationContext';
 import { useAuth } from '../context/AuthContext';
@@ -9,11 +10,9 @@ interface HeaderProps {
   showBackButton?: boolean;
   navigateTo: (page: Page) => void;
   onQRCodeClick: () => void;
-  cartCount: number;
-  onCartClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQRCodeClick, cartCount, onCartClick }) => {
+const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQRCodeClick }) => {
   const { t, language, setLanguage } = useLocalization();
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -48,10 +47,6 @@ const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQ
           <button onClick={onQRCodeClick} className="text-white p-2 hover:bg-white/10 rounded-full transition-all">
             <QRIcon className="w-5 h-5" />
           </button>
-          <button onClick={onCartClick} className="relative text-white p-2 hover:bg-white/10 rounded-full transition-all">
-            <ShoppingCartIcon className="w-5 h-5" />
-            {cartCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{cartCount}</span>}
-          </button>
           <div className="relative">
             <button onClick={() => setIsOpen(!isOpen)} className="text-white p-1 hover:bg-white/10 rounded-full transition-all flex items-center gap-1">
               {user?.picture ? <img src={user.picture} alt="" className="w-8 h-8 rounded-full border border-white/50" /> : <UserIcon className="w-8 h-8" />}
@@ -59,7 +54,8 @@ const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQ
             {isOpen && (
               <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in py-2">
                 <div className="px-4 py-2 border-b">
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">{t('header.language')}</p>
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">My Account</p>
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 mt-2">{t('header.language')}</p>
                   <div className="space-y-1">
                     {languages.map(l => (
                       <button key={l.code} onClick={() => { setLanguage(l.code); setIsOpen(false); }} className={`w-full text-left px-2 py-1.5 rounded-lg text-sm font-bold ${language === l.code ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50'}`}>{l.name}</button>

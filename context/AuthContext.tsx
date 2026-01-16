@@ -1,31 +1,16 @@
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { User } from '../types';
+import { supabase } from '../services/supabaseClient';
 
 interface AuthContextType {
   user: User | null;
-  handleGoogleLogin: (response: any) => void;
+  loading: boolean;
   loginAsGuest: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Helper to decode JWT safely
-function parseJwt(token: string) {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-}
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
@@ -36,20 +21,63 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return null;
     }
   });
+  const [loading, setLoading] = useState(true);
 
-  const handleGoogleLogin = (response: any) => {
-    const decoded = parseJwt(response.credential);
-    if (decoded) {
-      const newUser: User = {
-        name: decoded.name,
-        email: decoded.email,
-        picture: decoded.picture,
-        role: 'farmer',
-      };
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setUser(newUser);
-    }
-  };
+  useEffect(() => {
+    const checkSession = async () => {
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        const newUser: User = {
+          name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Farmer',
+          email: session.user.email || '',
+          picture: session.user.user_metadata.avatar_url,
+          phone: session.user.user_metadata.phone,
+          role: 'farmer',
+        };
+        setUser(newUser);
+        localStorage.setItem('user', JSON.stringify(newUser));
+      } else {
+        // If no session but local storage exists, it might be a guest or expired
+        // Clear local storage if no Supabase session exists and it's not a guest
+        const stored = localStorage.getItem('user');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed.email !== 'guest@shetiman.ai' && !session) {
+                setUser(null);
+                localStorage.removeItem('user');
+            }
+        }
+      }
+      setLoading(false);
+    };
+
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const newUser: User = {
+          name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Farmer',
+          email: session.user.email || '',
+          picture: session.user.user_metadata.avatar_url,
+          phone: session.user.user_metadata.phone,
+          role: 'farmer',
+        };
+        setUser(newUser);
+        localStorage.setItem('user', JSON.stringify(newUser));
+      } else if (_event === 'SIGNED_OUT') {
+        setUser(null);
+        localStorage.removeItem('user');
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const loginAsGuest = () => {
     const guestUser: User = {
@@ -61,16 +89,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(guestUser);
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-    if ((window as any).google?.accounts?.id) {
-      (window as any).google.accounts.id.disableAutoSelect();
+  const logout = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
     }
+    setUser(null);
+    localStorage.removeItem('user');
   };
 
   return (
-    <AuthContext.Provider value={{ user, handleGoogleLogin, loginAsGuest, logout }}>
+    <AuthContext.Provider value={{ user, loading, loginAsGuest, logout }}>
       {children}
     </AuthContext.Provider>
   );

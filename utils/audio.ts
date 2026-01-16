@@ -9,12 +9,11 @@ function decode(base64: string): Uint8Array {
   return bytes;
 }
 
-// FIX: Updated function signature to match guideline recommendations and allow for flexible audio decoding.
 async function decodeAudioData(
   data: Uint8Array,
   ctx: AudioContext,
   sampleRate: number,
-  numChannels: number,
+  numChannels: number
 ): Promise<AudioBuffer> {
   const dataInt16 = new Int16Array(data.buffer);
   const frameCount = dataInt16.length / numChannels;
@@ -49,12 +48,11 @@ export const playAudio = async (base64Audio: string): Promise<void> => {
         if (audioContext.state === 'suspended') {
             await audioContext.resume();
         }
-        // FIX: Added sampleRate and numChannels arguments to decodeAudioData call.
         const audioBuffer = await decodeAudioData(
             decode(base64Audio),
             audioContext,
             24000,
-            1,
+            1
         );
         const source = audioContext.createBufferSource();
         source.buffer = audioBuffer;

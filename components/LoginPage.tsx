@@ -1,177 +1,149 @@
-import React, { useEffect, useRef, useState } from 'react';
+
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocalization } from '../context/LocalizationContext';
-import { LeafIcon, UserIcon } from './icons';
+import { ShetiManLogo } from './icons';
+import { supabase } from '../services/supabaseClient';
 
 const LoginPage: React.FC = () => {
-  const { handleGoogleLogin, loginAsGuest } = useAuth();
   const { t } = useLocalization();
-  const googleBtnRef = useRef<HTMLDivElement>(null);
   
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [showFallback, setShowFallback] = useState(false);
-  const [errorStatus, setErrorStatus] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<'login' | 'signup'>('login');
 
-  useEffect(() => {
-    const initializeGoogle = () => {
-      const g = (window as any).google;
-      if (g?.accounts?.id) {
-        try {
-          // Initialize with the provided Client ID
-          g.accounts.id.initialize({
-            client_id: "741209341132-vm43hunjhpu4jorh7rt9ees47htfhrpj.apps.googleusercontent.com",
-            callback: handleGoogleLogin,
-            ux_mode: 'popup',
-            use_fedcm_for_prompt: false, 
-            itp_support: true,
-            auto_select: false,
-          });
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase) {
+      setError("Supabase not configured.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
 
-          if (googleBtnRef.current) {
-            g.accounts.id.renderButton(googleBtnRef.current, {
-              theme: 'outline',
-              size: 'large',
-              shape: 'pill',
-              width: 280,
-              text: 'signin_with',
-            });
+    try {
+      if (view === 'signup') {
+        const { error: signUpError } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: {
+            data: {
+              name: name,
+              phone: phone,
+              full_name: name
+            }
           }
-          
-          g.accounts.id.prompt((notification: any) => {
-             // Catching the origin_mismatch error that triggers the GSI_LOGGER warning
-             if (notification.isNotDisplayed()) {
-                const reason = notification.getNotDisplayedReason();
-                console.warn("[Auth] Google Prompt Notification:", reason);
-                
-                if (reason === 'origin_mismatch' || reason === 'opt_out_or_no_session') {
-                    setErrorStatus(reason);
-                    setShowFallback(true);
-                }
-             }
-          });
-          setIsInitializing(false);
-        } catch (err) {
-          console.error("[Auth] Google SDK Error:", err);
-          setErrorStatus('sdk_error');
-          setShowFallback(true);
-          setIsInitializing(false);
-        }
+        });
+        if (signUpError) throw signUpError;
+        alert("Success! Check your email to confirm.");
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+        // The session is automatically persisted by Supabase client
       }
-    };
-
-    const interval = setInterval(() => {
-      if ((window as any).google?.accounts?.id) {
-        initializeGoogle();
-        clearInterval(interval);
-      }
-    }, 500);
-
-    const timeout = setTimeout(() => {
-      if (isInitializing) {
-        setShowFallback(true);
-        setIsInitializing(false);
-        clearInterval(interval);
-      }
-    }, 3000);
-
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [handleGoogleLogin, isInitializing]);
-
-  const copyOrigin = () => {
-    const origin = window.location.origin;
-    navigator.clipboard.writeText(origin).then(() => {
-        alert(`URL Copied: ${origin}\n\nPaste this into your Google Cloud Console under "Authorized JavaScript origins" for Client ID 741209341132-vm43hunjhpu4jorh7rt9ees47htfhrpj.`);
-    });
+    } catch (err: any) {
+      setError(err.message || "Authentication failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAF8] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden font-sans">
-      {/* Background Gradients */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[100%] h-[100%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-secondary/10 rounded-full blur-[100px] animate-pulse [animation-delay:2s]"></div>
-      </div>
-
-      <div className="relative bg-white p-10 md:p-14 rounded-[3.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-gray-50 max-w-sm w-full animate-slide-up flex flex-col items-center z-10">
-        <div className="bg-[#388E3C]/10 w-24 h-24 rounded-3xl flex items-center justify-center mb-8 shadow-inner ring-8 ring-primary/5 group hover:scale-105 transition-transform duration-500">
-          <LeafIcon className="w-14 h-14 text-[#388E3C]" />
+    <div className="min-h-screen bg-[#F8FAF8] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
+      <div className="relative bg-white/90 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-white max-w-md w-full animate-slide-up z-10">
+        <div className="flex flex-col items-center mb-10 text-center">
+          <div className="w-24 h-24 mb-6">
+            <ShetiManLogo className="w-full h-full drop-shadow-xl" />
+          </div>
+          <h1 className="text-2xl font-black text-secondary tracking-tighter mb-1 uppercase">Sheti Man AI</h1>
+          <p className="text-gray-400 font-bold text-[9px] uppercase tracking-[0.4em] opacity-60">Smart Farming Partner</p>
         </div>
-        
-        <h1 className="text-4xl font-black text-[#1B5E20] tracking-tighter mb-2 leading-none">
-          Sheti Man AI
-        </h1>
-        <p className="text-gray-400 font-bold mb-10 text-[10px] uppercase tracking-[0.3em] opacity-60">
-          Sustainable Growth Partner
-        </p>
-        
-        <div className="w-full flex flex-col items-center justify-center min-h-[60px] mb-2">
-          {isInitializing ? (
-            <div className="flex flex-col items-center gap-3">
-               <div className="flex gap-1.5">
-                  <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                  <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-               </div>
-               <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest animate-pulse tracking-tighter">Connecting to Portal</span>
-            </div>
-          ) : (
-            <div className="animate-fade-in flex flex-col items-center w-full">
-               <div ref={googleBtnRef} className="min-h-[44px]" />
-            </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[10px] font-bold uppercase tracking-wider animate-fade-in">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleEmailAuth} className="space-y-4">
+          {view === 'signup' && (
+            <>
+              <input 
+                type="text" 
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all font-bold text-sm"
+                required
+              />
+              <input 
+                type="tel" 
+                placeholder="Phone Number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all font-bold text-sm"
+                required
+              />
+            </>
           )}
-        </div>
-
-        {/* Origin Alert for Developers */}
-        {errorStatus === 'origin_mismatch' && (
-          <div className="w-full mt-4 p-4 bg-red-50 rounded-2xl border border-red-100 text-left animate-fade-in">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <p className="text-[10px] font-black text-red-700 uppercase tracking-widest">Setup Required</p>
-            </div>
-            <p className="text-[9px] text-red-600 leading-tight mb-3 font-medium">
-              Google Login is blocked for this domain. You must add the current URL to your Google Cloud Console "Authorized origins".
-            </p>
-            <button 
-              onClick={copyOrigin}
-              className="w-full py-2 px-3 bg-white border border-red-200 rounded-xl text-[9px] font-mono text-center text-red-800 hover:bg-red-50 transition-colors"
+          <input 
+            type="email" 
+            placeholder="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all font-bold text-sm"
+            required
+          />
+          <div className="relative">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all font-bold text-sm pr-12"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-primary transition-colors"
             >
-              Copy Origin: {window.location.origin}
+              {showPassword ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.076L3.707 2.293zM8.305 5.264A6.859 6.859 0 0110 5c3.647 0 6.828 2.424 7.81 5.85a3.911 3.911 0 01-1.218 1.727L8.305 5.264zm6.061 9.625l-1.2-1.2a4.003 4.003 0 01-5.655-5.655l-1.2-1.2a6.001 6.001 0 008.055 8.055z" clipRule="evenodd" />
+                  <path d="M12.428 10.843L10 8.414l-2.428 2.429 1.414 1.414L10 11.242l1.014 1.015 1.414-1.414z" />
+                </svg>
+              )}
             </button>
           </div>
-        )}
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-secondary transition-all active:scale-95"
+          >
+            {loading ? "..." : (view === 'login' ? 'Sign In' : 'Sign Up')}
+          </button>
+        </form>
 
-        {/* Fallback & Guest Login */}
-        {(showFallback || errorStatus) && (
-          <div className="w-full mt-6 space-y-4 animate-fade-in">
-            <div className="relative flex items-center py-2">
-              <div className="flex-grow border-t border-gray-100"></div>
-              <span className="flex-shrink mx-4 text-[9px] font-black text-gray-300 uppercase tracking-widest">or</span>
-              <div className="flex-grow border-t border-gray-100"></div>
-            </div>
-
-            <button 
-              onClick={loginAsGuest}
-              className="w-full py-4 px-6 rounded-2xl bg-[#1B5E20] text-white font-black uppercase tracking-widest text-[11px] hover:bg-[#2E7D32] transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 active:scale-95 group"
-            >
-              <UserIcon className="w-4 h-4 group-hover:animate-bounce" />
-              Continue as Guest
-            </button>
-          </div>
-        )}
-
-        <div className="mt-14 pt-8 border-t border-gray-50 w-full opacity-40">
-          <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.5em] leading-none mb-1">
-            Global Organic Standard
-          </p>
+        <div className="flex justify-center mt-6">
+          <button 
+            onClick={() => setView(view === 'login' ? 'signup' : 'login')}
+            className="text-[10px] font-black text-primary/60 hover:text-primary transition-colors uppercase tracking-widest underline underline-offset-4"
+          >
+            {view === 'login' ? "New here? Sign Up" : "Back to Login"}
+          </button>
         </div>
       </div>
-      
-      <p className="mt-10 text-[10px] text-gray-400 font-bold max-w-[280px] leading-relaxed opacity-40 uppercase tracking-[0.2em]">
-        Designed for the modern eco-conscious farmer
-      </p>
     </div>
   );
 };
