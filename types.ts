@@ -31,6 +31,7 @@ export enum Page {
   FARM_TASKS,
   STORE,
   CHECKOUT,
+  ORDERS,
 }
 
 export interface Weather {
