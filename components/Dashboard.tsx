@@ -4,7 +4,7 @@ import Card from './Card';
 import WeatherDisplay from './WeatherDisplay';
 import { Page, Weather } from '../types';
 import { getWeatherInfo } from '../services/geminiService';
-import { ScienceIcon, CalculatorIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon } from './icons';
+import { ScienceIcon, CalculatorIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, ShoppingCartIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 import { useTasks } from '../context/TaskContext';
 
@@ -31,7 +31,7 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
 
   useEffect(() => { fetchWeather(); }, [fetchWeather]);
 
-  const activeTasks = tasks.filter(t => !t.isCompleted).slice(0, 2); // Show fewer tasks for compact size
+  const activeTasks = tasks.filter(t => !t.isCompleted).slice(0, 2);
   const pendingCount = tasks.filter(t => !t.isCompleted).length;
 
   return (
@@ -44,7 +44,6 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
       </div>
 
       <div className="grid grid-cols-2 gap-3.5">
-        {/* Row 1 - AI Core Tools */}
         <Card 
           title={t('dashboard.cards.recommendation.title')} 
           description={t('dashboard.cards.recommendation.description')} 
@@ -59,14 +58,12 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
           icon={<CameraIcon />} 
           onClick={() => navigateTo(Page.CROP_DOCTOR)} 
         />
-        
-        {/* Row 2 - Support Tools */}
         <Card 
-          title={t('dashboard.cards.calculator.title')} 
-          description={t('dashboard.cards.calculator.description')} 
-          color="#1976D2" 
-          icon={<CalculatorIcon />} 
-          onClick={() => navigateTo(Page.CALCULATOR)} 
+          title={t('dashboard.cards.marketplace.title')} 
+          description={t('dashboard.cards.marketplace.description')} 
+          color="#8E24AA" 
+          icon={<ShoppingCartIcon />} 
+          onClick={() => navigateTo(Page.STORE)} 
         />
         <Card 
           title={t('dashboard.cards.chatbot.title')} 
@@ -76,13 +73,11 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
           onClick={() => navigateTo(Page.CHATBOT)} 
         />
 
-        {/* Row 3 - 2x1 Size (Full Width) for Farm Tasks - FIXED TO BOTTOM & COMPACT SIZE */}
         <div className="col-span-2 mt-1">
             <div 
               className="bg-white rounded-3xl shadow-sm p-5 flex flex-col cursor-pointer transform active:scale-[0.98] transition-all duration-150 border border-gray-100 hover:border-emerald-200 hover:shadow-md group relative overflow-hidden"
               onClick={() => navigateTo(Page.FARM_TASKS)}
             >
-              {/* Decorative accent Forest Green */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full -mr-12 -mt-12 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
 
               <div className="flex items-center justify-between relative z-10">

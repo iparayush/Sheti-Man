@@ -5,6 +5,8 @@ import App from './App';
 import { LocalizationProvider } from './context/LocalizationContext';
 import { AuthProvider } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
+import { ProductProvider } from './context/ProductContext';
+import { OrderProvider } from './context/OrderContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error("Could not find root element");
@@ -14,9 +16,13 @@ root.render(
   <React.StrictMode>
     <LocalizationProvider>
       <AuthProvider>
-        <TaskProvider>
-          <App />
-        </TaskProvider>
+        <ProductProvider>
+          <OrderProvider>
+            <TaskProvider>
+              <App />
+            </TaskProvider>
+          </OrderProvider>
+        </ProductProvider>
       </AuthProvider>
     </LocalizationProvider>
   </React.StrictMode>

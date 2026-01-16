@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ShetiManLogo, QRIcon, UserIcon } from './icons';
+import { ShetiManLogo, QRIcon, UserIcon, ShoppingCartIcon } from './icons';
 import { Page, Language } from '../types';
 import { useLocalization } from '../context/LocalizationContext';
 import { useAuth } from '../context/AuthContext';
@@ -10,9 +10,11 @@ interface HeaderProps {
   showBackButton?: boolean;
   navigateTo: (page: Page) => void;
   onQRCodeClick: () => void;
+  cartCount?: number;
+  onCartClick?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQRCodeClick }) => {
+const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQRCodeClick, cartCount = 0, onCartClick }) => {
   const { t, language, setLanguage } = useLocalization();
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -43,7 +45,15 @@ const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQ
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          {cartCount > 0 && (
+            <button onClick={onCartClick} className="text-white p-2 hover:bg-white/10 rounded-full transition-all relative">
+              <ShoppingCartIcon className="w-5 h-5" />
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-[8px] font-black w-4 h-4 flex items-center justify-center rounded-full border border-primary">
+                {cartCount}
+              </span>
+            </button>
+          )}
           <button onClick={onQRCodeClick} className="text-white p-2 hover:bg-white/10 rounded-full transition-all">
             <QRIcon className="w-5 h-5" />
           </button>
@@ -55,14 +65,17 @@ const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQ
               <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in py-2">
                 <div className="px-4 py-2 border-b">
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">My Account</p>
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 mt-2">{t('header.language')}</p>
+                  <button onClick={() => { navigateTo(Page.ORDER_HISTORY); setIsOpen(false); }} className="w-full text-left py-2 text-sm font-bold text-gray-700 hover:text-primary transition-colors">
+                    {t('header.orderHistory')}
+                  </button>
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 mt-4">{t('header.language')}</p>
                   <div className="space-y-1">
                     {languages.map(l => (
                       <button key={l.code} onClick={() => { setLanguage(l.code); setIsOpen(false); }} className={`w-full text-left px-2 py-1.5 rounded-lg text-sm font-bold ${language === l.code ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50'}`}>{l.name}</button>
                     ))}
                   </div>
                 </div>
-                <button onClick={() => { logout(); setIsOpen(false); }} className="w-full text-left px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50">{t('header.logout')}</button>
+                <button onClick={() => { logout(); setIsOpen(false); }} className="w-full text-left px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50">{t('header.logout')}</button>
               </div>
             )}
           </div>
