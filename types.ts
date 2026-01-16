@@ -22,7 +22,6 @@ export interface ChatMessage {
   sources?: any[];
 }
 
-// Added STORE and CHECKOUT members to the Page enum to support navigation
 export enum Page {
   DASHBOARD,
   RECOMMENDATION,
@@ -56,6 +55,7 @@ export interface User {
   name: string;
   email: string;
   role: Role;
+  picture?: string;
 }
 
 export interface Task {
@@ -66,7 +66,6 @@ export interface Task {
   userId: string;
 }
 
-// Added missing Product interface used across the store and supplier features
 export interface Product {
   id: number;
   name: string;
@@ -76,15 +75,12 @@ export interface Product {
   supplierName: string;
 }
 
-// Added missing CartItem interface for shopping cart functionality
 export interface CartItem extends Product {
   quantity: number;
 }
 
-// Added missing OrderStatus type for tracking order lifecycle
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered';
 
-// Added missing Order interface for order history and checkout
 export interface Order {
   id: string;
   items: CartItem[];

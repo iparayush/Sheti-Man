@@ -33,18 +33,25 @@ const UserMenu: React.FC = () => {
         <div className="relative">
             <button 
                 onClick={() => setIsOpen(!isOpen)} 
-                className="text-white p-2 rounded-full hover:bg-white/10 flex items-center gap-2 transition-all"
+                className="text-white p-1 rounded-full hover:bg-white/10 flex items-center gap-2 transition-all border border-transparent hover:border-white/20"
             >
-                <UserIcon className="w-6 h-6 text-white" />
-                <span className="hidden sm:block font-bold text-sm tracking-tight text-white">{user.name}</span>
+                {user.picture ? (
+                  <img src={user.picture} alt={user.name} className="w-9 h-9 rounded-full object-cover border-2 border-white/50" />
+                ) : (
+                  <UserIcon className="w-8 h-8 text-white" />
+                )}
+                <span className="hidden sm:block font-bold text-sm tracking-tight text-white pr-2">{user.name}</span>
             </button>
             {isOpen && (
                 <div 
                     className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl z-50 border border-gray-100 overflow-hidden animate-fade-in"
                 >
-                    <div className="px-4 py-3 border-b bg-gray-50/50">
-                        <p className="text-sm text-dark font-extrabold">{user.name}</p>
-                        <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>
+                    <div className="px-4 py-3 border-b bg-gray-50/50 flex items-center gap-3">
+                        {user.picture && <img src={user.picture} alt="" className="w-10 h-10 rounded-full border border-gray-200" />}
+                        <div className="min-w-0">
+                            <p className="text-sm text-dark font-extrabold truncate">{user.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        </div>
                     </div>
                     <div className="py-2">
                         <p className="px-4 pt-1 pb-1 text-[11px] uppercase font-black text-gray-400 tracking-widest">{t('header.language')}</p>
@@ -68,7 +75,7 @@ const UserMenu: React.FC = () => {
                         </button>
                         <button
                             onClick={logout}
-                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                            className={`w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 font-medium transition-colors`}
                         >
                             {t('header.logout')}
                         </button>
