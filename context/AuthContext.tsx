@@ -4,6 +4,7 @@ import { User } from '../types';
 interface AuthContextType {
   user: User | null;
   handleGoogleLogin: (response: any) => void;
+  loginAsGuest: () => void;
   logout: () => void;
 }
 
@@ -50,6 +51,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const loginAsGuest = () => {
+    const guestUser: User = {
+      name: 'Guest Farmer',
+      email: 'guest@shetiman.ai',
+      role: 'farmer',
+    };
+    localStorage.setItem('user', JSON.stringify(guestUser));
+    setUser(guestUser);
+  };
+
   const logout = () => {
     localStorage.removeItem('user');
     setUser(null);
@@ -59,7 +70,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, handleGoogleLogin, logout }}>
+    <AuthContext.Provider value={{ user, handleGoogleLogin, loginAsGuest, logout }}>
       {children}
     </AuthContext.Provider>
   );
