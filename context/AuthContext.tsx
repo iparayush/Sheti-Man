@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { User } from '../types';
 
@@ -10,19 +9,31 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper to decode JWT safely
 function parseJwt(token: string) {
   try {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
     return JSON.parse(jsonPayload);
-  } catch (e) { return null; }
+  } catch (e) {
+    return null;
+  }
 }
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     const stored = localStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
+    try {
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
 
   const handleGoogleLogin = (response: any) => {
@@ -42,11 +53,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     localStorage.removeItem('user');
     setUser(null);
-    // FIX: Using type casting to access 'google' on window
-    if ((window as any).google) (window as any).google.accounts.id.disableAutoSelect();
+    if ((window as any).google?.accounts?.id) {
+      (window as any).google.accounts.id.disableAutoSelect();
+    }
   };
 
-  return <AuthContext.Provider value={{ user, handleGoogleLogin, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, handleGoogleLogin, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
