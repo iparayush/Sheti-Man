@@ -17,7 +17,7 @@ const LoginPage: React.FC = () => {
       const g = (window as any).google;
       if (g?.accounts?.id) {
         try {
-          // Initialize with the SPECIFIC client ID provided by the user to fix the origin error
+          // Initialize with the provided Client ID
           g.accounts.id.initialize({
             client_id: "741209341132-vm43hunjhpu4jorh7rt9ees47htfhrpj.apps.googleusercontent.com",
             callback: handleGoogleLogin,
@@ -38,12 +38,11 @@ const LoginPage: React.FC = () => {
           }
           
           g.accounts.id.prompt((notification: any) => {
-             // Diagnostic for GSI_LOGGER / origin_mismatch errors
+             // Catching the origin_mismatch error that triggers the GSI_LOGGER warning
              if (notification.isNotDisplayed()) {
                 const reason = notification.getNotDisplayedReason();
-                console.warn("[Auth] Google Notification Status:", reason);
+                console.warn("[Auth] Google Prompt Notification:", reason);
                 
-                // If the origin isn't whitelisted, the prompt won't show
                 if (reason === 'origin_mismatch' || reason === 'opt_out_or_no_session') {
                     setErrorStatus(reason);
                     setShowFallback(true);
@@ -52,7 +51,7 @@ const LoginPage: React.FC = () => {
           });
           setIsInitializing(false);
         } catch (err) {
-          console.error("[Auth] Google SDK Init Failed:", err);
+          console.error("[Auth] Google SDK Error:", err);
           setErrorStatus('sdk_error');
           setShowFallback(true);
           setIsInitializing(false);
@@ -67,7 +66,6 @@ const LoginPage: React.FC = () => {
       }
     }, 500);
 
-    // Watchdog: If button doesn't render within 3s, enable guest bypass
     const timeout = setTimeout(() => {
       if (isInitializing) {
         setShowFallback(true);
@@ -85,20 +83,20 @@ const LoginPage: React.FC = () => {
   const copyOrigin = () => {
     const origin = window.location.origin;
     navigator.clipboard.writeText(origin).then(() => {
-        alert(`Origin Copied: ${origin}\n\n1. Go to Google Cloud Console\n2. Open your OAuth 2.0 Client ID\n3. Add this URL to "Authorized JavaScript origins"\n4. Click Save and wait 5 minutes.`);
+        alert(`URL Copied: ${origin}\n\nPaste this into your Google Cloud Console under "Authorized JavaScript origins" for Client ID 741209341132-vm43hunjhpu4jorh7rt9ees47htfhrpj.`);
     });
   };
 
   return (
     <div className="min-h-screen bg-[#F8FAF8] flex flex-col items-center justify-center p-6 text-center relative overflow-hidden font-sans">
-      {/* Premium Animated Nature Background */}
+      {/* Background Gradients */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-15%] left-[-10%] w-[90%] h-[90%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-15%] right-[-10%] w-[70%] h-[70%] bg-secondary/10 rounded-full blur-[100px] animate-pulse [animation-delay:2s]"></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[100%] h-[100%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-secondary/10 rounded-full blur-[100px] animate-pulse [animation-delay:2s]"></div>
       </div>
 
       <div className="relative bg-white p-10 md:p-14 rounded-[3.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-gray-50 max-w-sm w-full animate-slide-up flex flex-col items-center z-10">
-        <div className="bg-[#388E3C]/10 w-24 h-24 rounded-3xl flex items-center justify-center mb-8 shadow-inner ring-8 ring-primary/5 group hover:rotate-6 transition-all duration-500">
+        <div className="bg-[#388E3C]/10 w-24 h-24 rounded-3xl flex items-center justify-center mb-8 shadow-inner ring-8 ring-primary/5 group hover:scale-105 transition-transform duration-500">
           <LeafIcon className="w-14 h-14 text-[#388E3C]" />
         </div>
         
@@ -117,24 +115,35 @@ const LoginPage: React.FC = () => {
                   <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></div>
                   <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                </div>
-               <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest animate-pulse">Syncing Services</span>
+               <span className="text-[9px] font-black text-gray-300 uppercase tracking-widest animate-pulse tracking-tighter">Connecting to Portal</span>
             </div>
           ) : (
             <div className="animate-fade-in flex flex-col items-center w-full">
                <div ref={googleBtnRef} className="min-h-[44px]" />
-               {errorStatus === 'origin_mismatch' && (
-                  <div className="mt-4 flex items-center gap-2 bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
-                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
-                    <p className="text-[9px] text-red-600 font-black uppercase tracking-tight">
-                      Domain Blocked by Google
-                    </p>
-                  </div>
-               )}
             </div>
           )}
         </div>
 
-        {/* Dynamic Fallback & Troubleshooter */}
+        {/* Origin Alert for Developers */}
+        {errorStatus === 'origin_mismatch' && (
+          <div className="w-full mt-4 p-4 bg-red-50 rounded-2xl border border-red-100 text-left animate-fade-in">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+              <p className="text-[10px] font-black text-red-700 uppercase tracking-widest">Setup Required</p>
+            </div>
+            <p className="text-[9px] text-red-600 leading-tight mb-3 font-medium">
+              Google Login is blocked for this domain. You must add the current URL to your Google Cloud Console "Authorized origins".
+            </p>
+            <button 
+              onClick={copyOrigin}
+              className="w-full py-2 px-3 bg-white border border-red-200 rounded-xl text-[9px] font-mono text-center text-red-800 hover:bg-red-50 transition-colors"
+            >
+              Copy Origin: {window.location.origin}
+            </button>
+          </div>
+        )}
+
+        {/* Fallback & Guest Login */}
         {(showFallback || errorStatus) && (
           <div className="w-full mt-6 space-y-4 animate-fade-in">
             <div className="relative flex items-center py-2">
@@ -147,34 +156,15 @@ const LoginPage: React.FC = () => {
               onClick={loginAsGuest}
               className="w-full py-4 px-6 rounded-2xl bg-[#1B5E20] text-white font-black uppercase tracking-widest text-[11px] hover:bg-[#2E7D32] transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 active:scale-95 group"
             >
-              <UserIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <UserIcon className="w-4 h-4 group-hover:animate-bounce" />
               Continue as Guest
             </button>
-
-            {errorStatus === 'origin_mismatch' && (
-              <div className="p-5 bg-orange-50 rounded-3xl border border-orange-100 text-left mt-8 ring-4 ring-orange-50/50">
-                <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full animate-ping"></div>
-                    <p className="text-[10px] font-black text-orange-700 uppercase tracking-wider">Whitelist Required</p>
-                </div>
-                <p className="text-[9px] text-orange-600 leading-relaxed mb-4 font-medium italic">
-                  Google blocks logins until the domain is whitelisted in your Cloud Console.
-                </p>
-                <button 
-                  onClick={copyOrigin}
-                  className="w-full py-3.5 bg-white border-2 border-orange-200 rounded-2xl text-[10px] font-mono text-center text-orange-800 cursor-pointer hover:border-orange-400 hover:bg-orange-100 transition-all flex flex-col gap-1 shadow-sm group/btn"
-                >
-                  <span className="opacity-50 text-[7px] uppercase font-sans font-black tracking-tighter group-hover/btn:text-orange-900 transition-colors">Tap to copy your origin</span>
-                  <span className="truncate px-3 font-bold">{window.location.origin}</span>
-                </button>
-              </div>
-            )}
           </div>
         )}
 
         <div className="mt-14 pt-8 border-t border-gray-50 w-full opacity-40">
           <p className="text-[9px] text-gray-400 font-black uppercase tracking-[0.5em] leading-none mb-1">
-            Certified Organic AI
+            Global Organic Standard
           </p>
         </div>
       </div>
