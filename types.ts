@@ -23,22 +23,7 @@ export interface ChatMessage {
   sources?: any[];
 }
 
-// Added fix for missing Product interface
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  supplierName: string;
-}
-
-// Added fix for missing CartItem interface
-export interface CartItem extends Product {
-  quantity: number;
-}
-
-// Added fix for missing navigation routes in Page enum
+// Added STORE, CHECKOUT, and ORDER_HISTORY to the Page enum
 export enum Page {
   DASHBOARD,
   RECOMMENDATION,
@@ -48,8 +33,7 @@ export enum Page {
   FARM_TASKS,
   STORE,
   CHECKOUT,
-  ORDER_HISTORY,
-  SUPPLIER_DASHBOARD
+  ORDER_HISTORY
 }
 
 export interface Weather {
@@ -68,22 +52,7 @@ export interface MapPlace {
   };
 }
 
-// Added 'supplier' role
-export type Role = 'farmer' | 'supplier';
-
-// Added fix for missing OrderStatus type
-export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered';
-
-// Added fix for missing Order interface
-export interface Order {
-  id: string;
-  items: CartItem[];
-  total: number;
-  customerName: string;
-  shippingAddress: string;
-  status: OrderStatus;
-  orderDate: string;
-}
+export type Role = 'farmer';
 
 export interface User {
   name: string;
@@ -99,4 +68,33 @@ export interface Task {
   dueDate: string | null;
   isCompleted: boolean;
   userId: string;
+}
+
+// Added Product interface for the store
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  supplierName: string;
+}
+
+// Added CartItem interface extending Product
+export interface CartItem extends Product {
+  quantity: number;
+}
+
+// Added OrderStatus type
+export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered';
+
+// Added Order interface for history and tracking
+export interface Order {
+  id: string;
+  items: CartItem[];
+  total: number;
+  customerName: string;
+  shippingAddress: string;
+  status: OrderStatus;
+  orderDate: string;
 }

@@ -39,10 +39,6 @@ export const translations: any = {
     submittingButton: { en: 'Analyzing Soil...', hi: 'मिट्टी का विश्लेषण...', mr: 'मातीचे विश्लेषण करत आहे...' },
     resultTitle: { en: 'Our Recommendation', hi: 'हमारी सलाह', mr: 'आमचा सल्ला' },
     sources: { en: 'Data Sources', hi: 'डेटा स्रोत', mr: 'माहिती स्रोत' },
-    findSuppliersButton: { en: 'Find Local Suppliers', hi: 'स्थानीय सप्लायर खोजें', mr: 'स्थानिक पुरवठादार शोधा' },
-    findingSuppliersButton: { en: 'Searching Maps...', hi: 'मैप्स खोज रहे हैं...', mr: 'मॅप्स शोधत आहे...' },
-    suppliersResultTitle: { en: 'Nearby Organic Shops', hi: 'पास की जैविक दुकानें', mr: 'जवळपासची सेंद्रिय दुकाने' },
-    noSuppliers: { en: 'No shops found nearby.', hi: 'आसपास कोई दुकान नहीं मिली।', mr: 'जवळपास कोणतीही दुकाने आढळली नाहीत.' },
     placeholder: { en: 'Enter soil details to begin.', hi: 'शुरू करने के लिए मिट्टी का विवरण भरें।', mr: 'सुरू करण्यासाठी मातीचा तपशील भरा.' }
   },
   calculator: {
