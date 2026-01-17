@@ -1,13 +1,12 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { getFertilizerRecommendation, textToSpeech, findLocalSuppliers } from '../services/geminiService';
+import { getFertilizerRecommendation, textToSpeech } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
-import { RecommendationFormState, MapPlace } from '../types';
+import { RecommendationFormState } from '../types';
 import Spinner from './Spinner';
-// Added missing BotIcon to imports
-import { SpeakerIcon, MapPinIcon, BotIcon } from './icons';
+import { SpeakerIcon, BotIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 
 const RecommendationForm: React.FC = () => {
@@ -25,30 +24,6 @@ const RecommendationForm: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [ttsLoading, setTtsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  
-  const [suppliersResult, setSuppliersResult] = useState<{ text: string; sources: MapPlace[] } | null>(null);
-  const [suppliersLoading, setSuppliersLoading] = useState<boolean>(false);
-  const [suppliersError, setSuppliersError] = useState<string>('');
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [locationError, setLocationError] = useState<string>('');
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-        },
-        () => {
-          setLocationError('Location access denied. Please enable it to find local suppliers.');
-        }
-      );
-    } else {
-      setLocationError('Geolocation is not supported by your browser.');
-    }
-  }, []);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -60,8 +35,6 @@ const RecommendationForm: React.FC = () => {
     setLoading(true);
     setError('');
     setResult(null);
-    setSuppliersResult(null);
-    setSuppliersError('');
     try {
       const response = await getFertilizerRecommendation(formData, language);
       setResult(response);
@@ -77,34 +50,13 @@ const RecommendationForm: React.FC = () => {
     setTtsLoading(true);
     try {
         const audioData = await textToSpeech(text);
-        if (audioData) await playAudio(audioData);
+        if (audioData) await playAudio(audioData as string);
     } catch(e) {
         setError("Sorry, we couldn't read the text aloud.");
     } finally {
         setTtsLoading(false);
     }
   }
-
-  const handleFindSuppliers = async () => {
-    if (!userLocation || !result) return;
-    
-    // Simple regex to find the first recommended fertilizer type
-    const fertilizerMatch = result.text.match(/(?:compost|vermicompost|cow dung|neem cake)/i);
-    const fertilizerType = fertilizerMatch ? fertilizerMatch[0] : 'organic fertilizer';
-
-    setSuppliersLoading(true);
-    setSuppliersError('');
-    setSuppliersResult(null);
-    try {
-        const response = await findLocalSuppliers(fertilizerType, userLocation.latitude, userLocation.longitude, language);
-        const mapSources = response.sources.filter(source => source.maps) as MapPlace[];
-        setSuppliersResult({ text: response.text, sources: mapSources });
-    } catch (err) {
-        setSuppliersError('Could not find local suppliers. Please try again later.');
-    } finally {
-        setSuppliersLoading(false);
-    }
-  };
 
   return (
     <div className="max-w-5xl mx-auto p-6 pb-28">
@@ -167,37 +119,6 @@ const RecommendationForm: React.FC = () => {
                   </ul>
                 </div>
               )}
-              <div className="mt-10">
-                <button onClick={handleFindSuppliers} disabled={!userLocation || suppliersLoading} className="w-full flex items-center justify-center gap-3 bg-secondary text-white py-4 px-6 rounded-xl font-bold text-lg hover:bg-opacity-95 focus:outline-none transition-all shadow-md">
-                  <MapPinIcon className="w-6 h-6" />
-                  {suppliersLoading ? t('recommendationForm.findingSuppliersButton') : t('recommendationForm.findSuppliersButton')}
-                </button>
-                {locationError && !userLocation && <p className="text-sm text-red-500 mt-2 text-center font-medium">{locationError}</p>}
-              </div>
-            </div>
-          )}
-
-          {suppliersLoading && <div className="py-10 flex justify-center"><Spinner /></div>}
-          {suppliersError && <p className="text-lg text-red-500 font-bold text-center">{suppliersError}</p>}
-
-          {suppliersResult && (
-            <div className="pt-8 border-t border-gray-50 animate-fade-in">
-                 <h3 className="text-2xl font-black text-secondary mb-4 tracking-tight">{t('recommendationForm.suppliersResultTitle')}</h3>
-                 <p className="text-base text-gray-600 mb-6 leading-relaxed">{suppliersResult.text}</p>
-                 {suppliersResult.sources.length > 0 ? (
-                    <ul className="space-y-4">
-                        {suppliersResult.sources.map((place, i) => (
-                            <li key={i}>
-                                <a href={place.maps.uri} target="_blank" rel="noopener noreferrer" className="flex items-center gap-4 p-4 rounded-xl hover:bg-green-50 transition-colors border border-gray-50">
-                                    <MapPinIcon className="w-7 h-7 text-primary flex-shrink-0" />
-                                    <span className="text-secondary text-lg font-bold hover:underline">{place.maps.title}</span>
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                 ) : (
-                    <p className="text-gray-500 text-center font-bold">{t('recommendationForm.noSuppliers')}</p>
-                 )}
             </div>
           )}
 

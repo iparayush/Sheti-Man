@@ -24,11 +24,13 @@ export const LocalizationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [language, setLanguage] = useState<Language>('mr');
 
   const t = useCallback((key: string): string => {
-    const translationSet = getNestedTranslation(translations, key) as Record<string, any> | undefined;
+    const translationData = getNestedTranslation(translations, key);
+    
+    // Explicitly cast to handle strict indexing
+    const translationSet = translationData as Record<string, string> | undefined;
     
     if (!translationSet || typeof translationSet[language] === 'undefined') {
-      const fallbackSet = getNestedTranslation(translations, key) as Record<string, any> | undefined;
-      return fallbackSet?.['en'] || key;
+      return (translationSet as any)?.['en'] || key;
     }
     
     return translationSet[language];

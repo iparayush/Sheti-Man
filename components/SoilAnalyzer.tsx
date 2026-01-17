@@ -2,7 +2,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-// FIX: Changed analyzeSoilImage to analyzeCropImage as it is not exported from geminiService
 import { analyzeCropImage, textToSpeech } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
 import Spinner from './Spinner';
@@ -41,7 +40,6 @@ const SoilAnalyzer: React.FC = () => {
     setError('');
     setResult('');
     try {
-      // FIX: Using analyzeCropImage
       const response = await analyzeCropImage(imageFile, prompt, language);
       setResult(response);
     } catch (err) {
@@ -59,7 +57,7 @@ const SoilAnalyzer: React.FC = () => {
     try {
         const audioData = await textToSpeech(result);
         if (audioData) {
-            await playAudio(audioData);
+            await playAudio(audioData as string);
         }
     } catch(e) {
         setError("Sorry, we couldn't read the text aloud.");
@@ -88,8 +86,8 @@ const SoilAnalyzer: React.FC = () => {
                 ) : (
                     <div className="text-center text-gray-500">
                         <UploadIcon className="w-12 h-12 mx-auto text-gray-400" />
-                        <p>{t('soilAnalyzer.uploadPrompt')}</p>
-                        <p className="text-sm">{t('soilAnalyzer.uploadHint')}</p>
+                        <p>{t('cropDoctor.uploadPrompt')}</p>
+                        <p className="text-sm">{t('cropDoctor.uploadHint')}</p>
                     </div>
                 )}
             </div>
@@ -97,13 +95,13 @@ const SoilAnalyzer: React.FC = () => {
             <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder={t('soilAnalyzer.promptPlaceholder')}
+                placeholder={t('cropDoctor.promptPlaceholder')}
                 className="w-full p-2 border border-gray-300 rounded-md mb-4"
                 rows={2}
             />
 
             <button onClick={handleAnalyze} disabled={loading || !imageFile} className="w-full bg-primary text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:bg-gray-400">
-                {loading ? t('soilAnalyzer.submittingButton') : t('soilAnalyzer.submitButton')}
+                {loading ? t('recommendationForm.submittingButton') : t('cropDoctor.submitButton')}
             </button>
         </div>
 
@@ -113,7 +111,7 @@ const SoilAnalyzer: React.FC = () => {
           {result && (
             <div>
               <div className="flex justify-between items-center mb-2">
-                <h3 className="text-xl font-bold text-secondary">{t('soilAnalyzer.resultTitle')}</h3>
+                <h3 className="text-xl font-bold text-secondary">{t('recommendationForm.resultTitle')}</h3>
                 <button onClick={handleSpeak} disabled={ttsLoading} className="p-1 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50" aria-label="Read report aloud">
                   {ttsLoading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div> : <SpeakerIcon className="w-5 h-5 text-secondary" />}
                 </button>
@@ -123,7 +121,7 @@ const SoilAnalyzer: React.FC = () => {
               </div>
             </div>
           )}
-          {!loading && !result && <p className="text-gray-500">{t('soilAnalyzer.placeholder')}</p>}
+          {!loading && !result && <p className="text-gray-500">{t('cropDoctor.placeholder')}</p>}
         </div>
       </div>
     </div>

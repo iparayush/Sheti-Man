@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import { useLocalization } from '../context/LocalizationContext';
 
@@ -11,10 +12,11 @@ interface QRCodeModalProps {
 const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
   const { t } = useLocalization();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const SHARE_URL = 'https://sheti-man.netlify.app/';
 
   useEffect(() => {
     if (isOpen && canvasRef.current) {
-      QRCode.toCanvas(canvasRef.current, window.location.href, { width: 256, margin: 2 }, (error: Error | null) => {
+      QRCode.toCanvas(canvasRef.current, SHARE_URL, { width: 256, margin: 2 }, (error: Error | null) => {
         if (error) console.error(error);
       });
     }

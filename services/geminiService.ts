@@ -97,20 +97,6 @@ export const getWeatherInfo = async (lat: number, lng: number, language: Languag
   return JSON.parse(response.text ?? "{}") as Weather;
 };
 
-export const findLocalSuppliers = async (type: string, lat: number, lng: number, lang: Language) => {
-  const prompt = `Find actual retail or wholesale shops for ${type} organic fertilizer near my current location. 
-  Provide a list of names and addresses. Reply in ${lang}.`;
-  const response: GenerateContentResponse = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-    config: {
-      tools: [{ googleMaps: {} }],
-      toolConfig: { retrievalConfig: { latLng: { latitude: lat, longitude: lng } } }
-    },
-  });
-  return { text: response.text ?? "", sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] };
-};
-
 export const textToSpeech = async (text: string) => {
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",

@@ -5,7 +5,6 @@ import remarkGfm from 'remark-gfm';
 import { analyzeCropImage, textToSpeech } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
 import Spinner from './Spinner';
-// FIX: Added DocumentScannerIcon and BotIcon to imports
 import { UploadIcon, SpeakerIcon, LeafIcon, DocumentScannerIcon, BotIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 
@@ -57,7 +56,9 @@ const CropDoctor: React.FC = () => {
     setTtsLoading(true);
     try {
         const audioData = await textToSpeech(result);
-        if (audioData) await playAudio(audioData);
+        if (audioData) {
+            await playAudio(audioData as string);
+        }
     } catch(e) {
         setError("Sorry, we couldn't read the text aloud.");
     } finally {

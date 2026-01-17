@@ -4,7 +4,7 @@ import Card from './Card';
 import WeatherDisplay from './WeatherDisplay';
 import { Page, Weather } from '../types';
 import { getWeatherInfo } from '../services/geminiService';
-import { ScienceIcon, CalculatorIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, ShoppingCartIcon } from './icons';
+import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, CalculatorIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 import { useTasks } from '../context/TaskContext';
 
@@ -59,11 +59,11 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
           onClick={() => navigateTo(Page.CROP_DOCTOR)} 
         />
         <Card 
-          title={t('dashboard.cards.marketplace.title')} 
-          description={t('dashboard.cards.marketplace.description')} 
-          color="#8E24AA" 
-          icon={<ShoppingCartIcon />} 
-          onClick={() => navigateTo(Page.STORE)} 
+          title={t('calculator.title')} 
+          description={t('calculator.title')} 
+          color="#0288D1" 
+          icon={<CalculatorIcon />} 
+          onClick={() => navigateTo(Page.CALCULATOR)} 
         />
         <Card 
           title={t('dashboard.cards.chatbot.title')} 
