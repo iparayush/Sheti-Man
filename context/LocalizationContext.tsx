@@ -11,7 +11,7 @@ interface LocalizationContextType {
 
 const LocalizationContext = createContext<LocalizationContextType | undefined>(undefined);
 
-const getNestedTranslation = (obj: any, key: string): string | undefined => {
+const getNestedTranslation = (obj: any, key: string): any => {
   try {
     return key.split('.').reduce((o, i) => (o ? o[i] : undefined), obj);
   } catch (error) {
@@ -24,10 +24,13 @@ export const LocalizationProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [language, setLanguage] = useState<Language>('mr');
 
   const t = useCallback((key: string): string => {
-    const translationSet = getNestedTranslation(translations, key);
+    const translationSet = getNestedTranslation(translations, key) as Record<string, any> | undefined;
+    
     if (!translationSet || typeof translationSet[language] === 'undefined') {
-      return getNestedTranslation(translations, key)?.['en'] || key;
+      const fallbackSet = getNestedTranslation(translations, key) as Record<string, any> | undefined;
+      return fallbackSet?.['en'] || key;
     }
+    
     return translationSet[language];
   }, [language]);
 

@@ -58,7 +58,9 @@ const SoilAnalyzer: React.FC = () => {
     setTtsLoading(true);
     try {
         const audioData = await textToSpeech(result);
-        await playAudio(audioData);
+        if (audioData) {
+            await playAudio(audioData);
+        }
     } catch(e) {
         setError("Sorry, we couldn't read the text aloud.");
     } finally {
