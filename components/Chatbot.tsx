@@ -43,8 +43,12 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
       const botResponse = await sendMessageToChat(currentInput, language);
       const botMessage: ChatMessage = { sender: 'bot', text: botResponse.text, sources: botResponse.sources };
       setMessages(prev => [...prev, botMessage]);
-    } catch (e) {
-      const errorMsg: ChatMessage = { sender: 'bot', text: "I'm having trouble connecting. Please try again." };
+    } catch (e: any) {
+      console.error("API Error:", e);
+      const errorMsg: ChatMessage = { 
+        sender: 'bot', 
+        text: `**Connection Error:** ${e.message || "I'm having trouble connecting to the AI brain. Please verify the API key and internet connection."}` 
+      };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
