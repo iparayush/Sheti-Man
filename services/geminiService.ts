@@ -2,9 +2,7 @@
 import { GoogleGenAI, Chat, GenerateContentResponse, Modality, Type } from "@google/genai";
 import { RecommendationFormState, CalculatorFormState, Weather, Language } from '../types';
 
-// Ensure the API key is a string to satisfy strict TypeScript build checks.
-const apiKey = process.env.API_KEY || "";
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 let chat: Chat | null = null;
 let currentChatLanguage: Language | null = null;
@@ -47,7 +45,7 @@ export const analyzeCropImage = async (imageFile: File, promptText: string, lang
   Reply in ${language}. Use Markdown. Additional user notes: ${promptText || 'None'}`;
   
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-image',
+    model: 'gemini-3-flash-preview',
     contents: { parts: [imagePart, { text: prompt }] },
   });
   return response.text ?? "";
@@ -112,7 +110,7 @@ export const textToSpeech = async (text: string) => {
 export const sendMessageToChat = async (message: string, language: Language) => {
   if (!chat || currentChatLanguage !== language) {
     chat = ai.chats.create({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview',
       config: { 
         systemInstruction: `You are 'Sheti Man AI', an expert assistant for Indian farmers. 
         You specialize in organic and sustainable farming. 
