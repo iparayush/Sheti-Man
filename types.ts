@@ -23,7 +23,7 @@ export interface ChatMessage {
   sources?: any[];
 }
 
-// Added STORE, CHECKOUT, and ORDER_HISTORY to the Page enum
+// Added missing Page enum values to resolve component navigation errors
 export enum Page {
   DASHBOARD,
   RECOMMENDATION,
@@ -33,7 +33,7 @@ export enum Page {
   FARM_TASKS,
   STORE,
   CHECKOUT,
-  ORDER_HISTORY
+  ORDERS
 }
 
 export interface Weather {
@@ -70,7 +70,7 @@ export interface Task {
   userId: string;
 }
 
-// Added Product interface for the store
+// Added missing Product interface for marketplace functionality
 export interface Product {
   id: number;
   name: string;
@@ -80,15 +80,15 @@ export interface Product {
   supplierName: string;
 }
 
-// Added CartItem interface extending Product
+// Added missing CartItem interface for the shopping cart
 export interface CartItem extends Product {
   quantity: number;
 }
 
-// Added OrderStatus type
+// Added missing OrderStatus type for order management
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered';
 
-// Added Order interface for history and tracking
+// Added missing Order interface for customer order tracking
 export interface Order {
   id: string;
   items: CartItem[];
