@@ -2,8 +2,9 @@
 import { GoogleGenAI, Chat, GenerateContentResponse, Modality, Type } from "@google/genai";
 import { RecommendationFormState, CalculatorFormState, Weather, Language } from '../types';
 
-// Fixed: Initializing GoogleGenAI with process.env.API_KEY directly as per guidelines.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Ensure the API key is a string to satisfy strict TypeScript build checks.
+const apiKey = process.env.API_KEY || "";
+const ai = new GoogleGenAI({ apiKey });
 
 let chat: Chat | null = null;
 let currentChatLanguage: Language | null = null;
