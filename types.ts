@@ -23,7 +23,6 @@ export interface ChatMessage {
   sources?: any[];
 }
 
-// Added STORE, CHECKOUT, and ORDER_HISTORY to the Page enum
 export enum Page {
   DASHBOARD,
   RECOMMENDATION,
@@ -55,6 +54,7 @@ export interface MapPlace {
 export type Role = 'farmer';
 
 export interface User {
+  id: string;
   name: string;
   email: string;
   role: Role;
@@ -70,7 +70,6 @@ export interface Task {
   userId: string;
 }
 
-// Added Product interface for the store
 export interface Product {
   id: number;
   name: string;
@@ -80,15 +79,12 @@ export interface Product {
   supplierName: string;
 }
 
-// Added CartItem interface extending Product
 export interface CartItem extends Product {
   quantity: number;
 }
 
-// Added OrderStatus type
 export type OrderStatus = 'Pending' | 'Shipped' | 'Delivered';
 
-// Added Order interface for history and tracking
 export interface Order {
   id: string;
   items: CartItem[];

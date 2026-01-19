@@ -34,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       if (session?.user) {
         const newUser: User = {
+          id: session.user.id,
           name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Farmer',
           email: session.user.email || '',
           picture: session.user.user_metadata.avatar_url,
@@ -43,8 +44,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(newUser);
         localStorage.setItem('user', JSON.stringify(newUser));
       } else {
-        // If no session but local storage exists, it might be a guest or expired
-        // Clear local storage if no Supabase session exists and it's not a guest
         const stored = localStorage.getItem('user');
         if (stored) {
             const parsed = JSON.parse(stored);
@@ -62,6 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         const newUser: User = {
+          id: session.user.id,
           name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Farmer',
           email: session.user.email || '',
           picture: session.user.user_metadata.avatar_url,
@@ -81,6 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const loginAsGuest = () => {
     const guestUser: User = {
+      id: 'guest',
       name: 'Guest Farmer',
       email: 'guest@shetiman.ai',
       role: 'farmer',

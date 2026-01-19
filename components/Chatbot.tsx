@@ -7,6 +7,8 @@ import { playAudio } from '../utils/audio';
 import { ChatMessage, Page } from '../types';
 import { LeafIcon, SendIcon, SpeakerIcon, BotIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabaseClient';
 
 interface ChatbotProps {
   navigateTo: (page: Page) => void;
@@ -14,6 +16,7 @@ interface ChatbotProps {
 
 const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
   const { language, t } = useLocalization();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -40,16 +43,25 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
     setLoading(true);
 
     try {
+      // Save to Supabase if user is logged in
+      if (user && user.id && user.id !== 'guest') {
+        const { error } = await supabase
+          .from('user_questions')
+          .insert([{ user_id: user.id, question_text: currentInput }]);
+        if (error) console.error("Error saving question:", error);
+      }
+
       const botResponse = await sendMessageToChat(currentInput, language);
       const botMessage: ChatMessage = { sender: 'bot', text: botResponse.text, sources: botResponse.sources };
       setMessages(prev => [...prev, botMessage]);
     } catch (e) {
+      console.error("Chat error:", e);
       const errorMsg: ChatMessage = { sender: 'bot', text: "I'm having trouble connecting. Please try again." };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
     }
-  }, [input, loading, language]);
+  }, [input, loading, language, user]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
