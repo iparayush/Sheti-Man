@@ -46,7 +46,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
     setLoading(true);
 
     try {
-      // Save to Supabase if user is logged in
       if (user && user.id && user.id !== 'guest') {
         const { error } = await supabase
           .from('user_questions')
@@ -57,14 +56,19 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
       const botResponse = await sendMessageToChat(textToSend, language);
       const botMessage: ChatMessage = { sender: 'bot', text: botResponse.text, sources: botResponse.sources };
       setMessages(prev => [...prev, botMessage]);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Chat error:", e);
-      // If error occurs, reset the chat session to avoid stale/broken states
       resetChatSession();
       
+      let errorData = e?.error || e;
+      const errorMsgText = String(errorData?.message || e?.message || "").toLowerCase();
+      const isQuota = errorMsgText.includes('quota') || errorMsgText.includes('429');
+
       const errorMsg: ChatMessage = { 
         sender: 'bot', 
-        text: "⚠️ I'm having trouble connecting right now. This can happen if the signal is weak or the service is busy. Would you like to try again?" 
+        text: isQuota 
+          ? "⚠️ **Service Limit Reached**: My organic wisdom channels are currently full. I am switching to a backup line. Please tap **Try Again** in 5 seconds."
+          : "⚠️ **Connection Error**: I couldn't reach the knowledge base. Please try again." 
       };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
@@ -110,7 +114,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
                 navigateTo(Page.DASHBOARD);
             }} 
             className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2.5 rounded-xl transition-all"
-            aria-label="Close chat"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -143,9 +146,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
                         const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
                         if (lastUserMsg) handleSend(lastUserMsg.text);
                     }}
-                    className="mt-4 w-full py-2 bg-primary/10 text-primary font-black text-[10px] uppercase tracking-widest rounded-lg hover:bg-primary/20 transition-colors"
+                    className="mt-4 w-full py-3 bg-primary text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-secondary transition-all shadow-md active:scale-95"
                   >
-                    Click to Try Again
+                    🔄 Try Again
                   </button>
                 )}
                 
@@ -219,12 +222,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
           <button 
             onClick={() => handleSend()} 
             disabled={loading || input.trim() === ''} 
-            className="absolute right-2 top-2 bottom-2 bg-primary text-white w-14 rounded-xl hover:bg-green-700 disabled:bg-gray-200 disabled:shadow-none shadow-lg shadow-primary/20 transition-all flex items-center justify-center focus:outline-none group"
+            className="absolute right-2 top-2 bottom-2 bg-primary text-white w-14 rounded-xl hover:bg-green-700 disabled:bg-gray-200 shadow-lg shadow-primary/20 transition-all flex items-center justify-center group"
           >
             <SendIcon className="w-6 h-6 group-active:scale-90 transition-transform" />
           </button>
         </div>
-        <p className="text-center text-[9px] text-gray-300 font-bold uppercase tracking-[0.2em] mt-3">Powered by Sheti Man AI • Organic Experts</p>
       </div>
     </div>
   );
