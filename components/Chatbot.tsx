@@ -124,73 +124,80 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
 
       <div className="flex-grow p-5 overflow-y-auto container mx-auto w-full max-w-4xl scroll-smooth">
         <div className="flex flex-col space-y-8 pb-4">
-          {messages.map((msg, index) => (
-            <div key={index} className={`flex items-start gap-4 animate-fade-in ${msg.sender === 'user' ? 'justify-end' : ''}`}>
-              {msg.sender === 'bot' && (
-                <div className="flex-shrink-0 bg-secondary text-white p-2.5 rounded-xl shadow-md mt-1">
-                    <LeafIcon className="w-5 h-5" />
-                </div>
-              )}
-              <div className={`relative max-w-[85%] sm:max-w-[75%] p-5 shadow-sm transition-all ${
-                msg.sender === 'user' 
-                  ? 'bg-primary text-white rounded-2xl rounded-tr-none shadow-primary/10' 
-                  : 'bg-gray-50 text-gray-800 rounded-2xl rounded-tl-none border border-gray-100'
-              }`}>
-                <div className={`prose prose-sm md:prose-base max-w-none ${msg.sender === 'user' ? 'prose-invert' : 'prose-green'}`}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text ?? ""}</ReactMarkdown>
-                </div>
-                
-                {msg.text.includes('⚠️') && (
-                  <button 
-                    onClick={() => {
-                        const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
-                        if (lastUserMsg) handleSend(lastUserMsg.text);
-                    }}
-                    className="mt-4 w-full py-3 bg-primary text-white font-black text-xs uppercase tracking-widest rounded-xl hover:bg-secondary transition-all shadow-md active:scale-95"
-                  >
-                    🔄 Try Again
-                  </button>
-                )}
-                
-                {msg.sources && msg.sources.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="font-bold text-[9px] text-gray-400 uppercase tracking-widest mb-2">Verified Sources</p>
-                        <div className="flex flex-wrap gap-2">
-                            {msg.sources.map((source, i) => (
-                                source.web && (
-                                  <a 
-                                    key={i} 
-                                    href={source.web.uri} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className="text-[10px] bg-primary/5 text-primary px-3 py-1.5 rounded-md hover:bg-primary/10 transition-colors inline-block max-w-[200px] truncate font-bold border border-primary/5"
-                                  >
-                                    {source.web.title}
-                                  </a>
-                                )
-                            ))}
-                        </div>
-                    </div>
-                  )}
+          {messages.map((msg, index) => {
+            const isAlert = msg.text.includes('⚠️');
+            const isQuota = msg.text.includes('Service Limit Reached');
 
-                {msg.sender === 'bot' && !msg.text.includes('⚠️') && (
-                    <div className="absolute bottom-1 right-1">
-                        <button 
-                          onClick={() => handleSpeak(msg.text, index)} 
-                          disabled={!!ttsLoading} 
-                          className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 transition-colors disabled:opacity-50"
-                        >
-                            {ttsLoading === `tts-${index}` ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                            ) : (
-                                <SpeakerIcon className="w-5 h-5"/>
-                            )}
-                        </button>
-                    </div>
+            return (
+              <div key={index} className={`flex items-start gap-4 animate-fade-in ${msg.sender === 'user' ? 'justify-end' : ''}`}>
+                {msg.sender === 'bot' && !isAlert && (
+                  <div className="flex-shrink-0 bg-secondary text-white p-2.5 rounded-xl shadow-md mt-1">
+                      <LeafIcon className="w-5 h-5" />
+                  </div>
                 )}
+                <div className={`relative max-w-[85%] sm:max-w-[75%] p-5 shadow-sm transition-all ${
+                  msg.sender === 'user' 
+                    ? 'bg-primary text-white rounded-2xl rounded-tr-none shadow-primary/10' 
+                    : isAlert 
+                      ? `w-full max-w-full border-2 ${isQuota ? 'border-orange-500 bg-orange-50' : 'border-red-500 bg-red-50'} rounded-2xl shadow-lg`
+                      : 'bg-gray-50 text-gray-800 rounded-2xl rounded-tl-none border border-gray-100'
+                } ${isQuota ? 'animate-pulse-fast' : ''}`}>
+                  <div className={`prose prose-sm md:prose-base max-w-none ${msg.sender === 'user' ? 'prose-invert' : 'prose-green'} ${isAlert ? 'text-center' : ''}`}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text ?? ""}</ReactMarkdown>
+                  </div>
+                  
+                  {isAlert && (
+                    <button 
+                      onClick={() => {
+                          const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
+                          if (lastUserMsg) handleSend(lastUserMsg.text);
+                      }}
+                      className={`mt-4 w-full py-3 ${isQuota ? 'bg-orange-600' : 'bg-red-600'} text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all shadow-md active:scale-95`}
+                    >
+                      🔄 Try Again
+                    </button>
+                  )}
+                  
+                  {msg.sources && msg.sources.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                          <p className="font-bold text-[9px] text-gray-400 uppercase tracking-widest mb-2">Verified Sources</p>
+                          <div className="flex flex-wrap gap-2">
+                              {msg.sources.map((source, i) => (
+                                  source.web && (
+                                    <a 
+                                      key={i} 
+                                      href={source.web.uri} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer" 
+                                      className="text-[10px] bg-primary/5 text-primary px-3 py-1.5 rounded-md hover:bg-primary/10 transition-colors inline-block max-w-[200px] truncate font-bold border border-primary/5"
+                                    >
+                                      {source.web.title}
+                                    </a>
+                                  )
+                              ))}
+                          </div>
+                      </div>
+                    )}
+
+                  {msg.sender === 'bot' && !isAlert && (
+                      <div className="absolute bottom-1 right-1">
+                          <button 
+                            onClick={() => handleSpeak(msg.text, index)} 
+                            disabled={!!ttsLoading} 
+                            className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 transition-colors disabled:opacity-50"
+                          >
+                              {ttsLoading === `tts-${index}` ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                              ) : (
+                                  <SpeakerIcon className="w-5 h-5"/>
+                              )}
+                          </button>
+                      </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {loading && (
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 bg-secondary text-white p-2.5 rounded-xl">
