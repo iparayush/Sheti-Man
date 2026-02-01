@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocalization } from '../context/LocalizationContext';
-import { ShetiManLogo } from './icons';
+import { AgriFertiLogo } from './icons';
 import { supabase } from '../services/supabaseClient';
 
 const LoginPage: React.FC = () => {
@@ -61,9 +61,9 @@ const LoginPage: React.FC = () => {
       <div className="relative bg-white/90 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-white max-w-md w-full animate-slide-up z-10">
         <div className="flex flex-col items-center mb-10 text-center">
           <div className="w-24 h-24 mb-6">
-            <ShetiManLogo className="w-full h-full drop-shadow-xl" />
+            <AgriFertiLogo className="w-full h-full drop-shadow-xl" />
           </div>
-          <h1 className="text-3xl font-black text-secondary tracking-tighter mb-1 uppercase">Sheti Man AI</h1>
+          <h1 className="text-3xl font-black text-secondary tracking-tighter mb-1 uppercase">AgriFerti AI</h1>
           <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.4em] opacity-60">{t('loginPage.subtitle')}</p>
         </div>
 

@@ -49,8 +49,9 @@ const RecommendationForm: React.FC = () => {
     if (!text || ttsLoading) return;
     setTtsLoading(true);
     try {
+        // textToSpeech now returns a base64 audio string from Gemini API
         const audioData = await textToSpeech(text);
-        if (audioData) await playAudio(audioData as string);
+        if (audioData) await playAudio(audioData);
     } catch(e) {
         setError("Sorry, we couldn't read the text aloud.");
     } finally {

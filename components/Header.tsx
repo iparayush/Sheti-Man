@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ShetiManLogo, QRIcon, UserIcon } from './icons';
+import { AgriFertiLogo, QRIcon, UserIcon } from './icons';
 import { Page, Language } from '../types';
 import { useLocalization } from '../context/LocalizationContext';
 import { useAuth } from '../context/AuthContext';
@@ -35,9 +35,9 @@ const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQ
             </button>
           )}
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigateTo(Page.DASHBOARD)}>
-            <ShetiManLogo className="w-10 h-10" />
+            <AgriFertiLogo className="w-10 h-10" />
             <div>
-              <h1 className="text-lg font-black text-white leading-none tracking-tight">Sheti Man</h1>
+              <h1 className="text-lg font-black text-white leading-none tracking-tight">AgriFerti AI</h1>
               <p className="text-[10px] font-bold text-white/80 uppercase tracking-tighter">{t('header.subtitle')}</p>
             </div>
           </div>

@@ -4,7 +4,7 @@ import Card from './Card';
 import WeatherDisplay from './WeatherDisplay';
 import { Page, Weather } from '../types';
 import { getWeatherInfo } from '../services/geminiService';
-import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, CalculatorIcon } from './icons';
+import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, CalculatorIcon, ShoppingCartIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 import { useTasks } from '../context/TaskContext';
 
@@ -59,11 +59,11 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
           onClick={() => navigateTo(Page.CROP_DOCTOR)} 
         />
         <Card 
-          title={t('calculator.title')} 
-          description={t('calculator.title')} 
-          color="#0288D1" 
-          icon={<CalculatorIcon />} 
-          onClick={() => navigateTo(Page.CALCULATOR)} 
+          title={t('store.title')} 
+          description={t('store.subtitle')} 
+          color="#1565C0" 
+          icon={<ShoppingCartIcon />} 
+          onClick={() => navigateTo(Page.STORE)} 
         />
         <Card 
           title={t('dashboard.cards.chatbot.title')} 
@@ -97,11 +97,6 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 p-2 rounded-full text-gray-300 group-hover:text-emerald-600 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
               </div>
 
               {activeTasks.length > 0 && (
@@ -118,6 +113,13 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
               )}
             </div>
         </div>
+        
+        <button 
+          onClick={() => navigateTo(Page.ORDER_HISTORY)}
+          className="col-span-2 py-3 bg-gray-50 text-gray-400 font-black text-[10px] uppercase tracking-widest rounded-2xl border border-dashed border-gray-200 hover:bg-white hover:text-primary hover:border-primary transition-all"
+        >
+          {t('orderHistoryPage.title')}
+        </button>
       </div>
     </div>
   );

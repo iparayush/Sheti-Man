@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { sendMessageToChat, textToSpeech, resetChatSession } from '../services/geminiService';
+import { sendMessageToChat, textToSpeech, resetChatSession, parseAiError } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
 import { ChatMessage, Page } from '../types';
 import { LeafIcon, SendIcon, SpeakerIcon, BotIcon } from './icons';
@@ -53,28 +53,27 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
         if (error) console.error("Error saving question:", error);
       }
 
-      const botResponse = await sendMessageToChat(textToSend, language);
+      const history = messages.slice(1).map(m => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text
+      }));
+
+      const botResponse = await sendMessageToChat(textToSend, language, history);
       const botMessage: ChatMessage = { sender: 'bot', text: botResponse.text, sources: botResponse.sources };
       setMessages(prev => [...prev, botMessage]);
     } catch (e: any) {
       console.error("Chat error:", e);
-      resetChatSession();
+      const detailedError = parseAiError(e);
       
-      let errorData = e?.error || e;
-      const errorMsgText = String(errorData?.message || e?.message || "").toLowerCase();
-      const isQuota = errorMsgText.includes('quota') || errorMsgText.includes('429');
-
       const errorMsg: ChatMessage = { 
         sender: 'bot', 
-        text: isQuota 
-          ? "⚠️ **Service Limit Reached**: My organic wisdom channels are currently full. I am switching to a backup line. Please tap **Try Again** in 5 seconds."
-          : "⚠️ **Connection Error**: I couldn't reach the knowledge base. Please try again." 
+        text: `⚠️ **AI Connection Error**\n\n${detailedError}` 
       };
       setMessages(prev => [...prev, errorMsg]);
     } finally {
       setLoading(false);
     }
-  }, [input, loading, language, user]);
+  }, [input, loading, language, user, messages]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -87,7 +86,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
     setTtsLoading(`tts-${index}`);
     try {
         const audioData = await textToSpeech(text);
-        if (audioData) await playAudio(audioData);
+        if (audioData) {
+            await playAudio(audioData);
+        }
     } catch (e) {
         console.error("TTS failed", e);
     } finally {
@@ -126,7 +127,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
         <div className="flex flex-col space-y-8 pb-4">
           {messages.map((msg, index) => {
             const isAlert = msg.text.includes('⚠️');
-            const isQuota = msg.text.includes('Service Limit Reached');
 
             return (
               <div key={index} className={`flex items-start gap-4 animate-fade-in ${msg.sender === 'user' ? 'justify-end' : ''}`}>
@@ -139,9 +139,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
                   msg.sender === 'user' 
                     ? 'bg-primary text-white rounded-2xl rounded-tr-none shadow-primary/10' 
                     : isAlert 
-                      ? `w-full max-w-full border-2 ${isQuota ? 'border-orange-500 bg-orange-50' : 'border-red-500 bg-red-50'} rounded-2xl shadow-lg`
+                      ? `w-full max-w-full border-2 border-red-500 bg-red-50 rounded-2xl shadow-lg`
                       : 'bg-gray-50 text-gray-800 rounded-2xl rounded-tl-none border border-gray-100'
-                } ${isQuota ? 'animate-pulse-fast' : ''}`}>
+                }`}>
                   <div className={`prose prose-sm md:prose-base max-w-none ${msg.sender === 'user' ? 'prose-invert' : 'prose-green'} ${isAlert ? 'text-center' : ''}`}>
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text ?? ""}</ReactMarkdown>
                   </div>
@@ -152,32 +152,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
                           const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
                           if (lastUserMsg) handleSend(lastUserMsg.text);
                       }}
-                      className={`mt-4 w-full py-3 ${isQuota ? 'bg-orange-600' : 'bg-red-600'} text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all shadow-md active:scale-95`}
+                      className={`mt-4 w-full py-3 bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all shadow-md active:scale-95`}
                     >
                       🔄 Try Again
                     </button>
                   )}
-                  
-                  {msg.sources && msg.sources.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                          <p className="font-bold text-[9px] text-gray-400 uppercase tracking-widest mb-2">Verified Sources</p>
-                          <div className="flex flex-wrap gap-2">
-                              {msg.sources.map((source, i) => (
-                                  source.web && (
-                                    <a 
-                                      key={i} 
-                                      href={source.web.uri} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      className="text-[10px] bg-primary/5 text-primary px-3 py-1.5 rounded-md hover:bg-primary/10 transition-colors inline-block max-w-[200px] truncate font-bold border border-primary/5"
-                                    >
-                                      {source.web.title}
-                                    </a>
-                                  )
-                              ))}
-                          </div>
-                      </div>
-                    )}
 
                   {msg.sender === 'bot' && !isAlert && (
                       <div className="absolute bottom-1 right-1">

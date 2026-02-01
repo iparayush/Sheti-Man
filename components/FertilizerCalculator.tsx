@@ -45,6 +45,7 @@ const FertilizerCalculator: React.FC = () => {
     if (!result?.text || ttsLoading) return;
     setTtsLoading(true);
     try {
+        // textToSpeech now returns a base64 audio string from Gemini API
         const audioData = await textToSpeech(result.text);
         if (audioData) await playAudio(audioData);
     } catch(e) {

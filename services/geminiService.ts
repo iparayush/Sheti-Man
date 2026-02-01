@@ -1,97 +1,110 @@
 
-import { GoogleGenAI, Chat, GenerateContentResponse, Modality, Type } from "@google/genai";
+import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { RecommendationFormState, CalculatorFormState, Weather, Language } from '../types';
 
-// Multi-key management to bypass single-key quota limits
-const getKeys = () => {
-  const keys = [
-    process.env.API_KEY,
-    process.env.API_KEY_2,
-    process.env.API_KEY_3
-  ].filter(k => k && k.length > 10 && k.startsWith('AIza')) as string[];
+/**
+ * Google GenAI क्लायंट इनिशियलाइज करा.
+ */
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+
+/**
+ * Gemini SDK कडून येणाऱ्या त्रुटींचे विश्लेषण करून वापरकर्त्याला समजेल असा संदेश तयार करतो.
+ */
+export const parseAiError = (error: any): string => {
+  const message = error?.message || String(error);
+  const status = error?.status || error?.response?.status;
   
-  return keys.length > 0 ? keys : [process.env.API_KEY || ""];
-};
+  console.debug("AI Error Logged:", { message, status, error });
 
-let currentKeyIndex = 0;
-let chat: Chat | null = null;
-let currentChatLanguage: Language | null = null;
+  const currentKey = process.env.API_KEY || "";
 
-const getActiveKey = () => {
-  const keys = getKeys();
-  return keys[currentKeyIndex % keys.length];
-};
-
-const rotateKey = () => {
-  const keys = getKeys();
-  if (keys.length > 1) {
-    currentKeyIndex++;
-    console.warn(`[Sheti Man AI] Rate limit hit. Rotating to key slot ${ (currentKeyIndex % keys.length) + 1 }`);
-    resetChatSession();
+  // १. की मधील तफावत तपासणे (उदा. OpenRouter की Gemini SDK मध्ये वापरणे)
+  if (currentKey.startsWith('sk-or-')) {
+    return "कॉन्फिगरेशन त्रुटी: आपण Google Gemini SDK सोबत OpenRouter API की वापरत आहात. कृपया Google AI Studio कडील 'AIza' ने सुरू होणारी की वापरा किंवा OpenRouter डॅशबोर्ड तपासा.";
   }
-};
 
-export const resetChatSession = () => {
-  chat = null;
-  currentChatLanguage = null;
+  // २. ऑथेंटिकेशन त्रुटी (Invalid Key)
+  if (message.includes('API key not valid') || (status === 400 && message.includes('API key'))) {
+    return "अवैध API की: तुमची Gemini API की चुकीची आहे किंवा तिची मुदत संपली आहे. कृपया Google AI Studio मध्ये तपासा.";
+  }
+
+  // ३. कोटा किंवा दर मर्यादा त्रुटी (429 Quota Exceeded)
+  if (message.includes('429') || message.includes('RESOURCE_EXHAUSTED')) {
+    return "कोटा संपला आहे: तुम्ही Gemini च्या मोफत मर्यादेपर्यंत पोहोचला आहात. कृपया काही मिनिटे प्रतीक्षा करा किंवा https://aistudio.google.com/ वर जाऊन कोटा तपासा.";
+  }
+
+  // ४. नेटवर्क किंवा सर्व्हर समस्या
+  if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
+    return "कनेक्शन त्रुटी: AI सर्व्हरशी संपर्क होऊ शकला नाही. कृपया इंटरनेट तपासा किंवा अ‍ॅड-ब्लॉकर बंद करा.";
+  }
+
+  if (status === 500 || status === 503) {
+    return "सर्व्हर ओव्हरलोड: सध्या Google चे AI सर्व्हर व्यस्त आहेत. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.";
+  }
+
+  // ५. परमिशन किंवा मॉडेल त्रुटी
+  if (message.includes('limit: 0') || message.includes('PERMISSION_DENIED')) {
+    return "प्रवेश नाकारला: तुमच्या प्रोजेक्टसाठी 'Generative Language API' सक्षम नाही. कृपया Google AI Studio मध्ये हे मॉडेल सुरू करा.";
+  }
+
+  if (message.includes('SAFETY')) {
+    return "कंटेंट ब्लॉक केला: सुरक्षितता धोरणांमुळे ही विनंती नाकारली गेली. कृपया शेतीशी संबंधित प्रश्न विचारा.";
+  }
+
+  // डिफॉल्ट संदेश
+  const firstLine = message.split('\n')[0];
+  return `AI त्रुटी: ${firstLine}`;
 };
 
 /**
- * Handles API calls with automatic key rotation and exponential backoff for 429 errors.
+ * ट्रान्झियंट त्रुटींसाठी (उदा. 429) रिट्राय लॉजिकसह API कॉल करणे.
  */
-async function withRetry<T>(fn: (ai: GoogleGenAI) => Promise<T>, retries = 4, delay = 4000): Promise<T> {
-  const currentKey = getActiveKey();
-  const ai = new GoogleGenAI({ apiKey: currentKey });
-  
+const callWithRetry = async (fn: () => Promise<any>, retries = 2): Promise<any> => {
   try {
-    return await fn(ai);
+    return await fn();
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    
-    let errorData = error?.error || error;
-    
-    // Sometimes error is a string that contains JSON
-    if (typeof error === 'string' && error.includes('{')) {
-      try { 
-        const jsonStr = error.substring(error.indexOf('{'));
-        errorData = JSON.parse(jsonStr); 
-      } catch(e) {}
-    } else if (error?.message && typeof error.message === 'string' && error.message.includes('{')) {
-      try {
-        const jsonStr = error.message.substring(error.message.indexOf('{'));
-        errorData = JSON.parse(jsonStr);
-      } catch(e) {}
-    }
-
-    const statusCode = String(errorData?.code || error?.status || "");
-    const statusText = String(errorData?.status || "").toUpperCase();
-    const errorMsg = String(errorData?.message || error?.message || "").toLowerCase();
-    
-    const isQuotaError = statusCode === "429" || statusText === 'RESOURCE_EXHAUSTED' || errorMsg.includes('quota');
-
-    if (isQuotaError && retries > 0) {
-      rotateKey();
-      const waitTime = delay + (Math.random() * 2000); // Add jitter
-      console.log(`[Sheti Man AI] Quota exhausted. Retrying in ${Math.round(waitTime)}ms...`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
-      return withRetry(fn, retries - 1, delay * 1.5);
-    }
-
-    if (retries > 0 && (statusCode.startsWith('5') || errorMsg.includes('fetch') || errorMsg.includes('network'))) {
+    const isRetryable = error.message?.includes('429') || error.message?.includes('RESOURCE_EXHAUSTED') || error.message?.includes('503');
+    if (retries > 0 && isRetryable) {
+      const delay = retries === 2 ? 1500 : 3500;
       await new Promise(resolve => setTimeout(resolve, delay));
-      return withRetry(fn, retries - 1, delay * 2);
+      return callWithRetry(fn, retries - 1);
     }
-    
     throw error;
   }
-}
+};
 
-const fileToGenerativePart = async (file: File) => {
-  return new Promise<{ inlineData: { data: string, mimeType: string } }>((resolve) => {
+/**
+ * 'gemini-flash-lite-latest' मॉडेलचा वापर, जो मोफत कोटा अधिक स्थिरपणे हाताळतो.
+ */
+const DEFAULT_MODEL = 'gemini-flash-lite-latest';
+
+export const testOpenRouterConnection = async () => {
+  try {
+    if (!process.env.API_KEY) throw new Error("API की गहाळ आहे.");
+
+    const response = await callWithRetry(() => ai.models.generateContent({
+      model: DEFAULT_MODEL,
+      contents: "Respond with 'READY'",
+    }));
+
+    return { 
+      success: true, 
+      message: response.text?.includes('READY') ? "कनेक्ट झाले" : "अनपेक्षित प्रतिसाद"
+    };
+  } catch (error: any) {
+    return { success: false, message: parseAiError(error) };
+  }
+};
+
+export const resetChatSession = () => {};
+
+const fileToBase64Data = (file: File): Promise<string> => {
+  return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64 = (reader.result as string).split(',')[1];
-      resolve({ inlineData: { data: base64, mimeType: file.type } });
+      const result = reader.result as string;
+      const base64 = result.split(',')[1];
+      resolve(base64);
     };
     reader.readAsDataURL(file);
   });
@@ -99,59 +112,53 @@ const fileToGenerativePart = async (file: File) => {
 
 export const getFertilizerRecommendation = async (formData: RecommendationFormState, language: Language) => {
   const { cropName, soilPH, soilMoisture, climate, nitrogen, phosphorus, potassium } = formData;
-  const prompt = `Act as an expert agronomist specializing in organic farming in India. 
-  Recommend the best organic fertilizers for: 
-  - Crop: ${cropName}
-  - Soil pH: ${soilPH}
-  - Soil Moisture: ${soilMoisture}%
-  - Climate: ${climate}
-  - Soil NPK Levels: N:${nitrogen}, P:${phosphorus}, K:${potassium}
+  const prompt = `Act as an expert agronomist. Recommend organic fertilizers for: ${cropName}, Soil pH: ${soilPH}, Moisture: ${soilMoisture}%, Climate: ${climate}, NPK: ${nitrogen}-${phosphorus}-${potassium}. Provide detailed instructions in ${language}. Use Markdown.`;
   
-  Provide detailed application instructions in ${language}. Use Google Search.`;
-  
-  return withRetry(async (ai) => {
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+  try {
+    const response = await callWithRetry(() => ai.models.generateContent({
+      model: DEFAULT_MODEL,
       contents: prompt,
-      config: { tools: [{ googleSearch: {} }] },
-    });
-    return { text: response.text ?? "", sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
-  });
+    }));
+    return { text: response.text || "", sources: [] };
+  } catch (error) { throw new Error(parseAiError(error)); }
 };
 
 export const analyzeCropImage = async (imageFile: File, promptText: string, language: Language) => {
-  const imagePart = await fileToGenerativePart(imageFile);
-  const prompt = `Identify plant diseases or pests from this image. Recommend organic treatments in ${language}. Notes: ${promptText || 'None'}`;
+  const base64Image = await fileToBase64Data(imageFile);
+  const prompt = `Identify plant diseases or issues and suggest organic treatments in ${language}. Additional info: ${promptText}`;
   
-  return withRetry(async (ai) => {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: { parts: [imagePart, { text: prompt }] },
-    });
-    return response.text ?? "";
-  });
+  try {
+    const response = await callWithRetry(() => ai.models.generateContent({
+      model: DEFAULT_MODEL,
+      contents: {
+        parts: [
+          { inlineData: { mimeType: imageFile.type, data: base64Image } },
+          { text: prompt }
+        ]
+      }
+    }));
+    return response.text || "";
+  } catch (error) { throw new Error(parseAiError(error)); }
 };
 
 export const calculateFertilizer = async (formData: CalculatorFormState, language: Language) => {
   const { landSize, cropType, fertilizerType } = formData;
-  const prompt = `Calculate exact organic ${fertilizerType} amount for ${landSize} acres of ${cropType}. Reply in ${language}.`;
+  const prompt = `Calculate the amount of organic ${fertilizerType} needed for ${landSize} acres of ${cropType}. Suggest an application schedule in ${language}.`;
   
-  return withRetry(async (ai) => {
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+  try {
+    const response = await callWithRetry(() => ai.models.generateContent({
+      model: DEFAULT_MODEL,
       contents: prompt,
-      config: { tools: [{ googleSearch: {} }] },
-    });
-    return { text: response.text ?? "", sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
-  });
+    }));
+    return { text: response.text || "", sources: [] };
+  } catch (error) { throw new Error(parseAiError(error)); }
 };
 
 export const getWeatherInfo = async (lat: number, lng: number, language: Language): Promise<Weather> => {
-  const prompt = `Current weather for Lat ${lat}, Lng ${lng} in ${language}. Return JSON ONLY.`;
-  
-  return withRetry(async (ai) => {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+  const prompt = `Current weather for ${lat}, ${lng} in ${language}. Return JSON.`;
+  try {
+    const response = await callWithRetry(() => ai.models.generateContent({
+      model: DEFAULT_MODEL,
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -163,49 +170,34 @@ export const getWeatherInfo = async (lat: number, lng: number, language: Languag
             windSpeed: { type: Type.NUMBER },
             humidity: { type: Type.NUMBER },
             recommendation: { type: Type.STRING },
-            location: { type: Type.STRING }
+            location: { type: Type.STRING },
           },
-          required: ["temperature", "condition", "windSpeed", "humidity", "recommendation", "location"]
-        }
-      }
-    });
-    return JSON.parse(response.text ?? "{}") as Weather;
-  });
-};
-
-export const textToSpeech = async (text: string) => {
-  return withRetry(async (ai) => {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: `Read: ${text.substring(0, 500)}` }] }],
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } },
-      },
-    });
-    return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-  });
-};
-
-export const sendMessageToChat = async (message: string, language: Language) => {
-  return withRetry(async (ai) => {
-    if (!chat || currentChatLanguage !== language) {
-      chat = ai.chats.create({
-        model: 'gemini-3-flash-preview', // Flash has higher rate limits than Pro
-        config: { 
-          systemInstruction: `You are 'Sheti Man AI', organic farming expert. Reply in ${language}. Use Markdown.`, 
-          tools: [{ googleSearch: {} }] 
+          required: ["temperature", "condition", "windSpeed", "humidity", "recommendation", "location"],
         },
-      });
-      currentChatLanguage = language;
-    }
-    
-    try {
-      const response: GenerateContentResponse = await chat.sendMessage({ message });
-      return { text: response.text ?? "", sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks };
-    } catch (err) {
-      chat = null; // Clear chat context on error to force a fresh session next time
-      throw err;
-    }
-  });
+      },
+    }));
+    return JSON.parse(response.text || "{}") as Weather;
+  } catch (error) { throw new Error(parseAiError(error)); }
+};
+
+export const textToSpeech = async (text: string): Promise<string> => { return text; };
+
+export const sendMessageToChat = async (message: string, language: Language, history: any[] = []) => {
+  const systemInstruction = `You are 'AgriFerti AI', an organic farming expert assistant. Help farmers with sustainable practices. Reply in ${language}. Use Markdown.`;
+  const contents = [
+    ...history.map(h => ({
+      role: h.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: h.content }]
+    })),
+    { role: 'user', parts: [{ text: message }] }
+  ];
+
+  try {
+    const response = await callWithRetry(() => ai.models.generateContent({
+      model: DEFAULT_MODEL,
+      contents,
+      config: { systemInstruction }
+    }));
+    return { text: response.text || "", sources: [] };
+  } catch (error) { throw new Error(parseAiError(error)); }
 };

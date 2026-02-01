@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-export const ShetiManLogo = (props: React.SVGProps<SVGSVGElement>) => (
+export const AgriFertiLogo = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
     <circle cx="50" cy="50" r="48" fill="#1B5E20" stroke="#FBC02D" strokeWidth="2"/>
     <path d="M50 25C55 25 60 30 60 35C60 40 55 45 50 45C45 45 40 40 40 35C40 30 45 25 50 25Z" fill="#FBC02D"/>
@@ -144,14 +144,12 @@ export const ClipboardListIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// Added ShoppingCartIcon for the marketplace
 export const ShoppingCartIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
   </svg>
 );
 
-// Added PackageIcon for supplier dashboard
 export const PackageIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />

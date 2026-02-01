@@ -1,64 +1,37 @@
 
-function decode(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
+/**
+ * Plays text aloud using the browser's native Web Speech API.
+ * This replaces the PCM decoding logic since OpenRouter provides text.
+ */
+export const playAudio = async (text: string): Promise<void> => {
+    if (!text) return;
 
-async function decodeAudioData(
-  data: Uint8Array,
-  ctx: AudioContext,
-  sampleRate: number,
-  numChannels: number
-): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-    }
-  }
-  return buffer;
-}
-
-let audioContext: AudioContext | null = null;
-let gainNode: GainNode | null = null;
-
-const getAudioContext = () => {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-        gainNode = audioContext.createGain();
-        gainNode.connect(audioContext.destination);
-    }
-    return { audioContext, gainNode };
-};
-
-export const playAudio = async (base64Audio: string): Promise<void> => {
-    const { audioContext, gainNode } = getAudioContext();
-    if (!audioContext || !gainNode) return;
-    
-    try {
-        if (audioContext.state === 'suspended') {
-            await audioContext.resume();
+    return new Promise((resolve) => {
+        if (!window.speechSynthesis) {
+            console.error("Speech Synthesis not supported in this browser.");
+            return resolve();
         }
-        const audioBuffer = await decodeAudioData(
-            decode(base64Audio),
-            audioContext,
-            24000,
-            1
-        );
-        const source = audioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(gainNode);
-        source.start();
-    } catch (error) {
-        console.error("Failed to play audio:", error);
-    }
+
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text.substring(0, 1000));
+        
+        // Detect language for voice selection
+        if (text.match(/[\u0900-\u097F]/)) {
+            utterance.lang = 'hi-IN';
+        } else if (text.match(/[\u0900-\u097F]/)) {
+            utterance.lang = 'mr-IN';
+        } else {
+            utterance.lang = 'en-US';
+        }
+
+        utterance.onend = () => resolve();
+        utterance.onerror = (err) => {
+            console.error("Speech Synthesis Error:", err);
+            resolve();
+        };
+
+        window.speechSynthesis.speak(utterance);
+    });
 };
