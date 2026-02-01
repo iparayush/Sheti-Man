@@ -4,7 +4,7 @@ import Card from './Card';
 import WeatherDisplay from './WeatherDisplay';
 import { Page, Weather } from '../types';
 import { getWeatherInfo } from '../services/geminiService';
-import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, CalculatorIcon, ShoppingCartIcon } from './icons';
+import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 import { useTasks } from '../context/TaskContext';
 
@@ -58,21 +58,35 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
           icon={<CameraIcon />} 
           onClick={() => navigateTo(Page.CROP_DOCTOR)} 
         />
-        <Card 
-          title={t('store.title')} 
-          description={t('store.subtitle')} 
-          color="#1565C0" 
-          icon={<ShoppingCartIcon />} 
-          onClick={() => navigateTo(Page.STORE)} 
-        />
-        <Card 
-          title={t('dashboard.cards.chatbot.title')} 
-          description={t('dashboard.cards.chatbot.description')} 
-          color="#F57C00" 
-          icon={<BotIcon />} 
-          onClick={() => navigateTo(Page.CHATBOT)} 
-        />
 
+        {/* AI Expert Chatbot Banner (Two Box / Full Width) */}
+        <div className="col-span-2 mt-1">
+            <div 
+              className="bg-white rounded-3xl shadow-sm p-5 flex items-center cursor-pointer transform active:scale-[0.98] transition-all duration-150 border border-gray-100 hover:border-orange-200 hover:shadow-md group relative overflow-hidden"
+              onClick={() => navigateTo(Page.CHATBOT)}
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-full -mr-12 -mt-12 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+
+              <div className="flex items-center gap-4 relative z-10 w-full">
+                <div className="w-14 h-14 rounded-2xl bg-[#F57C00] text-white flex items-center justify-center transition-all duration-300 shadow-lg shadow-orange-200/50 group-hover:rotate-6">
+                    <BotIcon className="w-7 h-7" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-black text-dark tracking-tight leading-none mb-1">{t('dashboard.cards.chatbot.title')}</h3>
+                  <p className="text-[11px] text-orange-600 font-black uppercase tracking-[0.15em]">
+                    {t('dashboard.cards.chatbot.description')}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-2 rounded-full text-gray-300 group-hover:text-orange-400 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+        </div>
+
+        {/* Farm Tasks Management Card */}
         <div className="col-span-2 mt-1">
             <div 
               className="bg-white rounded-3xl shadow-sm p-5 flex flex-col cursor-pointer transform active:scale-[0.98] transition-all duration-150 border border-gray-100 hover:border-emerald-200 hover:shadow-md group relative overflow-hidden"
@@ -113,13 +127,6 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
               )}
             </div>
         </div>
-        
-        <button 
-          onClick={() => navigateTo(Page.ORDER_HISTORY)}
-          className="col-span-2 py-3 bg-gray-50 text-gray-400 font-black text-[10px] uppercase tracking-widest rounded-2xl border border-dashed border-gray-200 hover:bg-white hover:text-primary hover:border-primary transition-all"
-        >
-          {t('orderHistoryPage.title')}
-        </button>
       </div>
     </div>
   );

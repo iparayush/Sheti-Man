@@ -4,8 +4,9 @@ import { RecommendationFormState, CalculatorFormState, Weather, Language } from 
 
 /**
  * Google GenAI क्लायंट इनिशियलाइज करा.
+ * Fixed initialization to match strictly with recommended pattern: new GoogleGenAI({apiKey: process.env.API_KEY})
  */
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Gemini SDK कडून येणाऱ्या त्रुटींचे विश्लेषण करून वापरकर्त्याला समजेल असा संदेश तयार करतो.

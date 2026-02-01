@@ -16,47 +16,6 @@ export const translations: any = {
       chatbot: { title: { en: 'तज्ञ - चॅट', hi: 'विशेषज्ञ चैट', mr: 'तज्ञ - चॅट' }, description: { en: 'AI Expert', hi: 'तज्ञ', mr: 'तज्ञ' } },
     }
   },
-  store: {
-    title: { en: 'Organic Market', hi: 'जैविक बाजार', mr: 'सेंद्रिय बाजार' },
-    subtitle: { en: 'Buy Supplies', hi: 'सामग्री खरेदी करा', mr: 'सामग्री खरेदी करा' },
-    supplierLabel: { en: 'By', hi: 'द्वारा', mr: 'द्वारे' },
-    addToCart: { en: 'Add', hi: 'जोड़ें', mr: 'जोडा' }
-  },
-  cart: {
-    title: { en: 'Your Cart', hi: 'आपका कार्ट', mr: 'तुमचा कार्ट' },
-    empty: { en: 'Your cart is empty', hi: 'आपका कार्ट खाली है', mr: 'तुमचा कार्ट रिकामा आहे' },
-    emptyHint: { en: 'Add some organic seeds or fertilizers.', hi: 'कुछ जैविक बीज या उर्वरक जोड़ें।', mr: 'काही सेंद्रिय बियाणे किंवा खते जोडा.' },
-    each: { en: 'each', hi: 'प्रति', mr: 'प्रति' },
-    remove: { en: 'Remove', hi: 'हटाएं', mr: 'काढून टाका' },
-    total: { en: 'Total Amount', hi: 'कुल राशि', mr: 'एकूण रक्कम' },
-    checkout: { en: 'Place Order', hi: 'ऑर्डर दें', mr: 'ऑर्डर द्या' }
-  },
-  checkoutPage: {
-    title: { en: 'Checkout', hi: 'चेकआउट', mr: 'चेकआउट' },
-    shippingTitle: { en: 'Shipping Details', hi: 'शिपिंग विवरण', mr: 'शिपिंग तपशील' },
-    summaryTitle: { en: 'Order Summary', hi: 'ऑर्डर सारांश', mr: 'ऑर्डर सारांश' },
-    fullNameLabel: { en: 'Full Name', hi: 'पूरा नाम', mr: 'पूर्ण नाव' },
-    addressLabel: { en: 'Delivery Address', hi: 'वितरण का पता', mr: 'वितरण पत्ता' },
-    cityLabel: { en: 'City', hi: 'शहर', mr: 'शहर' },
-    pincodeLabel: { en: 'Pincode', hi: 'पिनकोड', mr: 'पिनकोड' },
-    placeOrderButton: { en: 'Confirm Order', hi: 'ऑर्डर की पुष्टि करें', mr: 'ऑर्डरची पुष्टी करा' },
-    orderPlacedSuccess: { en: 'Order Placed!', hi: 'ऑर्डर सफल!', mr: 'ऑर्डर यशस्वी!' },
-    orderPlacedDescription: { en: 'Your order will be delivered soon.', hi: 'आपका ऑर्डर जल्द ही डिलीवर कर दिया जाएगा।', mr: 'तुमची ऑर्डर लवकरच डिलिव्हर केली जाईल.' },
-    backToDashboardButton: { en: 'Return Home', hi: 'होम पर जाएं', mr: 'होमवर जा' },
-    cartEmpty: { en: 'Cart is empty', hi: 'कार्ट खाली है', mr: 'कार्ट रिकामा आहे' }
-  },
-  orderHistoryPage: {
-    title: { en: 'Order History', hi: 'ऑर्डर इतिहास', mr: 'ऑर्डर इतिहास' },
-    noOrders: { en: 'No orders yet.', hi: 'अभी तक कोई ऑर्डर नहीं।', mr: 'अद्याप एकही ऑर्डर नाही.' },
-    orderId: { en: 'Order ID', hi: 'ऑर्डर आईडी', mr: 'ऑर्डर आयडी' },
-    date: { en: 'Date', hi: 'तारीख', mr: 'तारीख' },
-    total: { en: 'Total', hi: 'कुल', mr: 'एकूण' },
-    status: { en: 'Status', hi: 'स्थिति', mr: 'स्थिती' },
-    items: { en: 'Items', hi: 'आइटम', mr: 'वस्तू' },
-    statusPending: { en: 'Processing', hi: 'प्रक्रिया जारी', mr: 'प्रक्रिया सुरू' },
-    statusShipped: { en: 'In Transit', hi: 'रास्ते में', mr: 'मार्गावर' },
-    statusDelivered: { en: 'Delivered', hi: 'पहुंच गया', mr: 'पोहोचले' }
-  },
   loginPage: {
     title: { en: 'AgriFerti AI', hi: 'एग्रीफर्टी एआई', mr: 'अ‍ॅग्रीफर्टी एआय' },
     subtitle: { en: 'Smart Organic Farming Partner', hi: 'स्मार्ट जैविक खेती पार्टनर', mr: 'स्मार्ट सेंद्रिय शेती भागीदार' },

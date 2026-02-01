@@ -54,7 +54,6 @@ const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQ
             {isOpen && (
               <div className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in py-2">
                 <div className="px-4 py-2 border-b">
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Account</p>
                   <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2 mt-2">{t('header.language')}</p>
                   <div className="space-y-1">
                     {languages.map(l => (
