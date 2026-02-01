@@ -17,7 +17,7 @@ export const translations: any = {
     }
   },
   loginPage: {
-    title: { en: 'AgriFerti AI', hi: 'एग्रीफर्टी एआई', mr: 'अ‍ॅग्रीफर्टी एआय' },
+    title: { en: 'shetiman', hi: 'शेटिमन', mr: 'शेटिमन' },
     subtitle: { en: 'Smart Organic Farming Partner', hi: 'स्मार्ट जैविक खेती पार्टनर', mr: 'स्मार्ट सेंद्रिय शेती भागीदार' },
   },
   weather: {
@@ -61,7 +61,7 @@ export const translations: any = {
     placeholder: { en: 'Scan a leaf to start diagnosis.', hi: 'निदान शुरू करने के लिए पत्ता स्कैन करें।', mr: 'निदान सुरू करण्यासाठी पान स्कॅन करा.' }
   },
   chatbot: {
-    title: { en: 'AgriFerti Chat', hi: 'एग्रीफर्टी चैट', mr: 'अ‍ॅग्रीफर्टी चॅट' },
+    title: { en: 'shetiman Chat', hi: 'शेटिमन चैट', mr: 'शेटिमन चॅट' },
     subtitle: { en: 'Expert Farming Assistant', hi: 'विशेषज्ञ खेती सहायक', mr: 'तज्ञ शेती सहाय्यक' },
     greeting: { en: 'Hello! How can I help with your farm today?', hi: 'नमस्ते! आज मैं आपकी खेती में क्या मदद कर सकता हूँ?', mr: 'नमस्कार! आज मी तुमच्या शेतीमध्ये कशी मदत करू शकतो?' },
     placeholder: { en: 'Ask me anything about farming...', hi: 'खेती के बारे में कुछ भी पूछें...', mr: 'शेतीबद्दल काहीही विचारा...' }

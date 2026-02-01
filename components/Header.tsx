@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ onBack, showBackButton, navigateTo, onQ
           <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigateTo(Page.DASHBOARD)}>
             <AgriFertiLogo className="w-10 h-10" />
             <div>
-              <h1 className="text-lg font-black text-white leading-none tracking-tight">AgriFerti AI</h1>
+              <h1 className="text-lg font-black text-white leading-none tracking-tight">shetiman</h1>
               <p className="text-[10px] font-bold text-white/80 uppercase tracking-tighter">{t('header.subtitle')}</p>
             </div>
           </div>

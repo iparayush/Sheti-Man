@@ -63,7 +63,7 @@ const LoginPage: React.FC = () => {
           <div className="w-24 h-24 mb-6">
             <AgriFertiLogo className="w-full h-full drop-shadow-xl" />
           </div>
-          <h1 className="text-3xl font-black text-secondary tracking-tighter mb-1 uppercase">AgriFerti AI</h1>
+          <h1 className="text-3xl font-black text-secondary tracking-tighter mb-1 uppercase">shetiman</h1>
           <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.4em] opacity-60">{t('loginPage.subtitle')}</p>
         </div>
 

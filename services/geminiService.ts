@@ -157,7 +157,7 @@ export const resetChatSession = () => {};
 export const textToSpeech = async (text: string): Promise<string> => { return text; };
 
 export const sendMessageToChat = async (message: string, language: Language, history: any[] = []) => {
-  const systemInstruction = `You are 'AgriFerti AI', an organic farming expert. Reply in ${language}. Use Markdown.`;
+  const systemInstruction = `You are 'shetiman', an organic farming expert. Reply in ${language}. Use Markdown.`;
   const contents = [
     ...history.map(h => ({
       role: h.role === 'assistant' ? 'model' : 'user',
