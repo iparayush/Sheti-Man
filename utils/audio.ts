@@ -1,37 +1,29 @@
 
 /**
- * Plays text aloud using the browser's native Web Speech API.
- * This replaces the PCM decoding logic since OpenRouter provides text.
+ * Uses the browser's native Web Speech API to read text aloud.
+ * This ensures zero dependency on external AI audio APIs and zero quota usage.
  */
-export const playAudio = async (text: string): Promise<void> => {
-    if (!text) return;
+export const playAudio = async (input: string): Promise<void> => {
+  if (!input) return;
 
-    return new Promise((resolve) => {
-        if (!window.speechSynthesis) {
-            console.error("Speech Synthesis not supported in this browser.");
-            return resolve();
-        }
+  // If the input is the signal from geminiService, we shouldn't attempt to play it directly
+  // but instead this utility should be called with the actual text to speak.
+  if (input === "BROWSER_TTS_SIGNAL") return;
 
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel();
+  return new Promise((resolve) => {
+    const utterance = new SpeechSynthesisUtterance(input);
+    
+    // Attempt to select a local language voice if possible
+    const voices = window.speechSynthesis.getVoices();
+    // Simple logic to find a voice that matches the text's potential script
+    // Note: Real-world language detection is complex, we just pick the first available for now.
+    
+    utterance.onend = () => resolve();
+    utterance.onerror = (e) => {
+      console.error("SpeechSynthesis error:", e);
+      resolve();
+    };
 
-        const utterance = new SpeechSynthesisUtterance(text.substring(0, 1000));
-        
-        // Detect language for voice selection
-        if (text.match(/[\u0900-\u097F]/)) {
-            utterance.lang = 'hi-IN';
-        } else if (text.match(/[\u0900-\u097F]/)) {
-            utterance.lang = 'mr-IN';
-        } else {
-            utterance.lang = 'en-US';
-        }
-
-        utterance.onend = () => resolve();
-        utterance.onerror = (err) => {
-            console.error("Speech Synthesis Error:", err);
-            resolve();
-        };
-
-        window.speechSynthesis.speak(utterance);
-    });
+    window.speechSynthesis.speak(utterance);
+  });
 };

@@ -1,177 +1,237 @@
 
-import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { RecommendationFormState, CalculatorFormState, Weather, Language } from '../types';
 
 /**
- * Google GenAI क्लायंट इनिशियलाइज करा.
+ * OpenRouter API Configuration
  */
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+// We use the injected key or fallback to the provided one
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || "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";
+const DEFAULT_MODEL = "google/gemini-2.0-flash-001";
 
 /**
- * Gemini SDK कडून येणाऱ्या त्रुटींचे विश्लेषण.
+ * Standardizes AI error messages for farmers.
  */
 export const parseAiError = (error: any): string => {
   const message = error?.message || String(error);
-  const status = error?.status || error?.response?.status;
   
-  if (message.includes('429') || message.includes('RESOURCE_EXHAUSTED')) {
-    return "कोटा संपला आहे: कृपया थोड्या वेळाने प्रयत्न करा.";
+  if (message.includes('429') || message.toLowerCase().includes('quota') || message.toLowerCase().includes('rate limit')) {
+    return "QUOTA_EXCEEDED: कोटा संपला आहे. कृपया थोड्या वेळाने प्रयत्न करा.";
   }
-  if (message.includes('API key not valid')) {
-    return "अवैध API की: कृपया तुमची की तपासा.";
+  
+  if (message.includes('401') || message.includes('Unauthorized')) {
+    return "AUTH_ERROR: OpenRouter API की अवैध आहे.";
   }
-  return `AI त्रुटी: ${message.split('\n')[0]}`;
+  
+  return `त्रुटी: ${message.split('\n')[0]}`;
 };
 
-const callWithRetry = async (fn: () => Promise<any>, retries = 2): Promise<any> => {
+/**
+ * Core function to call OpenRouter via REST
+ */
+const callOpenRouter = async (messages: any[], jsonMode = false) => {
+  if (!OPENROUTER_KEY) {
+    throw new Error("OpenRouter API key is missing.");
+  }
+
   try {
-    return await fn();
-  } catch (error: any) {
-    const isRetryable = error.message?.includes('429') || error.message?.includes('RESOURCE_EXHAUSTED') || error.message?.includes('503');
-    if (retries > 0 && isRetryable) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      return callWithRetry(fn, retries - 1);
+    const response = await fetch(OPENROUTER_API_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENROUTER_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": window.location.origin,
+        "X-Title": "shetiman",
+      },
+      body: JSON.stringify({
+        model: DEFAULT_MODEL,
+        messages: messages,
+        response_format: jsonMode ? { type: "json_object" } : undefined,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData?.error?.message || `HTTP error! status: ${response.status}`);
     }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
     throw error;
   }
 };
 
-const DEFAULT_MODEL = 'gemini-3-flash-preview';
-
-export const testOpenRouterConnection = async () => {
-  try {
-    const response = await ai.models.generateContent({
-      model: DEFAULT_MODEL,
-      contents: "Respond with 'READY'",
-    });
-    return { success: true, message: "Connected" };
-  } catch (error: any) {
-    return { success: false, message: parseAiError(error) };
-  }
-};
-
-const fileToBase64Data = (file: File): Promise<string> => {
-  return new Promise((resolve) => {
+/**
+ * Converts File to base64 string for vision analysis.
+ */
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 };
 
+/**
+ * Expert organic fertilizer advice.
+ */
 export const getFertilizerRecommendation = async (formData: RecommendationFormState, language: Language) => {
-  const prompt = `Act as an expert agronomist. Recommend organic fertilizers for: ${formData.cropName}, Soil pH: ${formData.soilPH}, Moisture: ${formData.soilMoisture}%, Climate: ${formData.climate}, NPK: ${formData.nitrogen}-${formData.phosphorus}-${formData.potassium}. Provide detailed instructions in ${language}. Use Markdown.`;
   try {
-    const response = await callWithRetry(() => ai.models.generateContent({ model: DEFAULT_MODEL, contents: prompt }));
-    return { text: response.text || "", sources: [] };
-  } catch (error) { throw new Error(parseAiError(error)); }
-};
+    const systemPrompt = `You are 'shetiman', a senior organic agronomist. Language: ${language}.
+    Rules:
+    1. Use Markdown for ALL output.
+    2. Suggest specific organic fertilizers like Jeevamrut, Vermicompost, or Neem Cake.
+    3. Use clean headers (###) and bold text.`;
 
-export const analyzeCropImage = async (imageFile: File, promptText: string, language: Language) => {
-  const base64Image = await fileToBase64Data(imageFile);
-  const prompt = `Identify plant diseases or issues and suggest organic treatments in ${language}. Additional info: ${promptText}`;
-  try {
-    const response = await callWithRetry(() => ai.models.generateContent({
-      model: DEFAULT_MODEL,
-      contents: {
-        parts: [
-          { inlineData: { mimeType: imageFile.type, data: base64Image } },
-          { text: prompt }
-        ]
-      }
-    }));
-    return response.text || "";
-  } catch (error) { throw new Error(parseAiError(error)); }
-};
+    const userPrompt = `Generate a fertilizer plan for: ${formData.cropName}.
+    - Soil pH: ${formData.soilPH}
+    - Moisture: ${formData.soilMoisture}%
+    - Climate: ${formData.climate}
+    - NPK: N=${formData.nitrogen}, P=${formData.phosphorus}, K=${formData.potassium}.`;
 
-export const calculateFertilizer = async (formData: CalculatorFormState, language: Language) => {
-  const prompt = `Calculate the amount of organic ${formData.fertilizerType} needed for ${formData.landSize} acres of ${formData.cropType}. Suggest an application schedule in ${language}.`;
-  try {
-    const response = await callWithRetry(() => ai.models.generateContent({ model: DEFAULT_MODEL, contents: prompt }));
-    return { text: response.text || "", sources: [] };
-  } catch (error) { throw new Error(parseAiError(error)); }
+    const text = await callOpenRouter([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ]);
+
+    return { text: text || "", sources: [] };
+  } catch (error) {
+    throw new Error(parseAiError(error));
+  }
 };
 
 /**
- * USE REAL WEATHER API + GEMINI
- * This uses Open-Meteo for real data and Gemini to generate the recommendation.
+ * Vision-based disease analysis via OpenRouter multimodal format.
+ */
+export const analyzeCropImage = async (imageFile: File, promptText: string, language: Language) => {
+  try {
+    const base64Image = await fileToBase64(imageFile);
+    const mimeType = imageFile.type;
+
+    const messages = [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Identify diseases from this crop image and suggest organic remedies in ${language}. Notes: ${promptText || 'None'}. Use professional Markdown.`
+          },
+          {
+            type: "image_url",
+            image_url: {
+              url: `data:${mimeType};base64,${base64Image}`
+            }
+          }
+        ]
+      }
+    ];
+
+    const text = await callOpenRouter(messages);
+    return text || "";
+  } catch (error) {
+    throw new Error(parseAiError(error));
+  }
+};
+
+/**
+ * Precise dosage calculation for organic farming.
+ */
+export const calculateFertilizer = async (formData: CalculatorFormState, language: Language) => {
+  try {
+    const prompt = `Calculate exactly how much ${formData.fertilizerType} is needed for ${formData.landSize} acres of ${formData.cropType}. 
+    Return calculation in ${language} with Markdown steps.`;
+
+    const text = await callOpenRouter([{ role: "user", content: prompt }]);
+    return { text: text || "", sources: [] };
+  } catch (error) {
+    throw new Error(parseAiError(error));
+  }
+};
+
+/**
+ * Intelligent weather farm advice.
  */
 export const getWeatherInfo = async (lat: number, lng: number, language: Language): Promise<Weather> => {
   try {
-    // 1. Fetch real raw data from Open-Meteo
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`;
-    const weatherResponse = await fetch(weatherUrl);
-    const rawData = await weatherResponse.json();
+    const res = await fetch(weatherUrl);
+    const raw = await res.json();
+    
+    const { temperature_2m, relative_humidity_2m, weather_code, wind_speed_10m } = raw.current;
 
-    if (!rawData.current) throw new Error("Weather data unavailable");
+    const systemPrompt = `You are a weather analysis bot for farmers. Language: ${language}.
+    Return a valid JSON object with exactly:
+    { "condition": "Brief description", "recommendation": "One sentence farm advice", "location": "General area" }`;
 
-    const { temperature_2m, relative_humidity_2m, weather_code, wind_speed_10m } = rawData.current;
+    const userPrompt = `Weather Data: Temp ${temperature_2m}°C, Humidity ${relative_humidity_2m}%, Wind ${wind_speed_10m}km/h, WMO Code ${weather_code}`;
 
-    // 2. Use Gemini to interpret this data and get a localized recommendation
-    const prompt = `
-      The current weather data for coordinates ${lat}, ${lng} is:
-      Temp: ${temperature_2m}°C, Humidity: ${relative_humidity_2m}%, Wind: ${wind_speed_10m}km/h, WMO Code: ${weather_code}.
-      
-      Task:
-      1. Map the WMO weather code to a simple condition string (like Clear, Cloudy, Rainy, etc.) in ${language}.
-      2. Provide a short, practical organic farming recommendation for this weather in ${language} (max 15 words).
-      3. Provide a friendly location name for these coordinates (District/City) in ${language}.
-      
-      Return strictly JSON.
-    `;
+    const jsonResponse = await callOpenRouter([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ], true);
 
-    const aiResponse = await callWithRetry(() => ai.models.generateContent({
-      model: DEFAULT_MODEL,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            condition: { type: Type.STRING },
-            recommendation: { type: Type.STRING },
-            location: { type: Type.STRING },
-          },
-          required: ["condition", "recommendation", "location"],
-        },
-      },
-    }));
-
-    const interpretation = JSON.parse(aiResponse.text || "{}");
+    const interpretation = JSON.parse(jsonResponse || "{}");
 
     return {
       temperature: temperature_2m,
       condition: interpretation.condition || "Moderate",
       windSpeed: wind_speed_10m,
       humidity: relative_humidity_2m,
-      recommendation: interpretation.recommendation || "Maintain your fields.",
-      location: interpretation.location || "Your Farm"
+      recommendation: interpretation.recommendation || "नियमित कामे सुरू ठेवा.",
+      location: interpretation.location || "Nearby Area"
     };
   } catch (error) { 
-    console.error("Weather API Error:", error);
     throw new Error(parseAiError(error)); 
   }
 };
 
-export const resetChatSession = () => {};
-
-export const textToSpeech = async (text: string): Promise<string> => { return text; };
-
+/**
+ * Conversational farming assistant.
+ */
 export const sendMessageToChat = async (message: string, language: Language, history: any[] = []) => {
-  const systemInstruction = `You are 'shetiman', an organic farming expert. Reply in ${language}. Use Markdown.`;
-  const contents = [
-    ...history.map(h => ({
-      role: h.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: h.content }]
-    })),
-    { role: 'user', parts: [{ text: message }] }
-  ];
-
   try {
-    const response = await callWithRetry(() => ai.models.generateContent({
-      model: DEFAULT_MODEL,
-      contents,
-      config: { systemInstruction }
+    const systemPrompt = `You are 'shetiman', an expert AI agricultural advisor. Language: ${language}. 
+    Suggest organic Indian farming solutions. Be helpful and concise.`;
+
+    const formattedHistory = history.map(h => ({
+      role: h.role === 'assistant' ? 'assistant' : 'user',
+      content: h.content
     }));
-    return { text: response.text || "", sources: [] };
-  } catch (error) { throw new Error(parseAiError(error)); }
+
+    const text = await callOpenRouter([
+      { role: "system", content: systemPrompt },
+      ...formattedHistory,
+      { role: "user", content: message }
+    ]);
+
+    return { text: text || "", sources: [] };
+  } catch (error) {
+    throw new Error(parseAiError(error));
+  }
 };
+
+/**
+ * Browser TTS Signal.
+ */
+export const textToSpeech = async (text: string): Promise<string> => {
+  return "BROWSER_TTS_SIGNAL"; 
+};
+
+/**
+ * Verify OpenRouter connectivity.
+ */
+export const verifyAiStatus = async () => {
+  try {
+    const response = await callOpenRouter([{ role: "user", content: "Respond with 'ACTIVE'." }]);
+    return { success: response?.includes('ACTIVE'), message: "Connected via OpenRouter" };
+  } catch (error: any) {
+    return { success: false, message: parseAiError(error) };
+  }
+};
+
+export const resetChatSession = () => {};

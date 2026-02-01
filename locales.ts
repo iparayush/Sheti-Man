@@ -61,7 +61,7 @@ export const translations: any = {
     placeholder: { en: 'Scan a leaf to start diagnosis.', hi: 'निदान शुरू करने के लिए पत्ता स्कैन करें।', mr: 'निदान सुरू करण्यासाठी पान स्कॅन करा.' }
   },
   chatbot: {
-    title: { en: 'shetiman Chat', hi: 'शेटिमन चैट', mr: 'शेटिमन चॅट' },
+    title: { en: 'AI Chat', hi: 'AI चैट', mr: 'AI चॅट' },
     subtitle: { en: 'Expert Farming Assistant', hi: 'विशेषज्ञ खेती सहायक', mr: 'तज्ञ शेती सहाय्यक' },
     greeting: { en: 'Hello! How can I help with your farm today?', hi: 'नमस्ते! आज मैं आपकी खेती में क्या मदद कर सकता हूँ?', mr: 'नमस्कार! आज मी तुमच्या शेतीमध्ये कशी मदत करू शकतो?' },
     placeholder: { en: 'Ask me anything about farming...', hi: 'खेती के बारे में कुछ भी पूछें...', mr: 'शेतीबद्दल काहीही विचारा...' }

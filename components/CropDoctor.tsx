@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { analyzeCropImage, textToSpeech } from '../services/geminiService';
+import { analyzeCropImage } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
 import Spinner from './Spinner';
 import { UploadIcon, SpeakerIcon, LeafIcon, DocumentScannerIcon, BotIcon } from './icons';
@@ -55,11 +55,7 @@ const CropDoctor: React.FC = () => {
     if (!result || ttsLoading) return;
     setTtsLoading(true);
     try {
-        // textToSpeech now returns a base64 audio string from Gemini API
-        const audioData = await textToSpeech(result);
-        if (audioData) {
-            await playAudio(audioData);
-        }
+        await playAudio(result);
     } catch(e) {
         setError("Sorry, we couldn't read the text aloud.");
     } finally {

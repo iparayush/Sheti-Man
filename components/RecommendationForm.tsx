@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { getFertilizerRecommendation, textToSpeech } from '../services/geminiService';
+import { getFertilizerRecommendation } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
 import { RecommendationFormState } from '../types';
 import Spinner from './Spinner';
@@ -49,9 +49,7 @@ const RecommendationForm: React.FC = () => {
     if (!text || ttsLoading) return;
     setTtsLoading(true);
     try {
-        // textToSpeech now returns a base64 audio string from Gemini API
-        const audioData = await textToSpeech(text);
-        if (audioData) await playAudio(audioData);
+        await playAudio(text);
     } catch(e) {
         setError("Sorry, we couldn't read the text aloud.");
     } finally {
@@ -110,16 +108,6 @@ const RecommendationForm: React.FC = () => {
               <div className="prose prose-lg max-w-none prose-green">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.text}</ReactMarkdown>
               </div>
-              {result.sources && result.sources.length > 0 && (
-                <div className="mt-8 pt-6 border-t border-gray-50">
-                  <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">{t('recommendationForm.sources')}</h4>
-                  <ul className="space-y-2">
-                    {result.sources.map((source, i) => (
-                      source.web && <li key={i}><a href={source.web.uri} target="_blank" rel="noopener noreferrer" className="text-base text-primary font-bold hover:underline">● {source.web.title}</a></li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
           )}
 
