@@ -105,21 +105,30 @@ const App: React.FC = () => {
   };
 
   const showBackButton = currentPage !== Page.DASHBOARD;
+  
+  // Clean up error message for display
   const displayError = apiError?.replace("QUOTA_EXCEEDED: ", "").replace("AUTH_ERROR: ", "");
 
   return (
     <div className="min-h-screen bg-[#F8FAF8] flex flex-col font-sans relative">
       {apiError && currentPage !== Page.CHATBOT && (
-        <div className="bg-red-600 text-white text-[11px] py-2.5 px-4 font-bold flex flex-wrap gap-2 justify-between items-center z-[100] sticky top-0 shadow-lg animate-fade-in">
+        <div className={`text-white text-[11px] py-2.5 px-4 font-bold flex flex-wrap gap-2 justify-between items-center z-[100] sticky top-0 shadow-lg animate-fade-in ${apiError.includes('AUTH_ERROR') ? 'bg-orange-600' : 'bg-red-600'}`}>
           <div className="flex-1 flex items-center gap-2">
-            <span className="shrink-0 text-base">⚠️</span>
-            <span>{displayError}</span>
+            <span className="shrink-0 text-base">{apiError.includes('AUTH_ERROR') ? '🔑' : '⚠️'}</span>
+            <div className="flex flex-col">
+               <span className="leading-tight">{displayError}</span>
+               {apiError.includes('AUTH_ERROR') && (
+                 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline text-[9px] opacity-90 mt-0.5">
+                   Get your API Key from Google AI Studio
+                 </a>
+               )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button 
               onClick={checkAiConnection} 
               disabled={isRetrying}
-              className="bg-white text-red-600 px-3 py-1 rounded-md uppercase tracking-tighter hover:bg-gray-100 disabled:opacity-50 transition-all active:scale-95"
+              className="bg-white text-dark px-3 py-1 rounded-md uppercase tracking-tighter hover:bg-gray-100 disabled:opacity-50 transition-all active:scale-95"
             >
               {isRetrying ? "Verifying..." : "Retry"}
             </button>

@@ -20,33 +20,37 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user) {
+      if (!user || user.id === 'guest') {
         setOrders([]);
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .order('order_date', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('order_date', { ascending: false });
 
-      if (error) {
-        console.error("Error fetching orders:", error);
-      } else {
+        if (error) throw error;
+
         const mappedOrders: Order[] = (data || []).map((o: any) => ({
           id: o.id,
           items: o.items,
-          total: o.total,
+          total: Number(o.total),
           customerName: o.customer_name,
           shippingAddress: o.shipping_address,
           status: o.status as OrderStatus,
           orderDate: o.order_date
         }));
         setOrders(mappedOrders);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchOrders();
@@ -54,7 +58,17 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const addOrder = async (orderData: Omit<Order, 'id' | 'orderDate'>) => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    
+    // Fallback for guest or disconnected users
+    if (!session || !user || user.id === 'guest') {
+        const localId = `GUEST-${Date.now()}`;
+        setOrders(prev => [{
+          ...orderData,
+          id: localId,
+          orderDate: new Date().toISOString()
+        } as Order, ...prev]);
+        return;
+    }
 
     const newOrderDB = {
       id: `AGRI-${Date.now()}`,

@@ -38,55 +38,42 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
     if (textToSend.trim() === '' || loading) return;
 
     if (!retryText) {
-      const userMessage: ChatMessage = { sender: 'user', text: textToSend };
-      setMessages(prev => [...prev, userMessage]);
+      setMessages(prev => [...prev, { sender: 'user', text: textToSend }]);
       setInput('');
     }
     
     setLoading(true);
 
     try {
-      if (user && user.id && user.id !== 'guest') {
-        const { error } = await supabase
-          .from('user_questions')
-          .insert([{ user_id: user.id, question_text: textToSend }]);
-        if (error) console.error("Error saving question:", error);
+      if (user?.id && user.id !== 'guest') {
+        await supabase.from('user_questions').insert([{ user_id: user.id, question_text: textToSend }]);
       }
 
+      // Format simple history for OpenRouter
       const history = messages.slice(1).map(m => ({
         role: m.sender === 'user' ? 'user' : 'assistant',
         content: m.text
       }));
 
       const botResponse = await sendMessageToChat(textToSend, language, history);
-      const botMessage: ChatMessage = { sender: 'bot', text: botResponse.text, sources: botResponse.sources };
-      setMessages(prev => [...prev, botMessage]);
+      setMessages(prev => [...prev, { sender: 'bot', text: botResponse.text }]);
     } catch (e: any) {
-      console.error("Chat error:", e);
-      const detailedError = parseAiError(e);
-      
-      const errorMsg: ChatMessage = { 
-        sender: 'bot', 
-        text: `⚠️ **AI Connection Error**\n\n${detailedError}` 
-      };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev => [...prev, { sender: 'bot', text: `⚠️ **Error**\n\n${parseAiError(e)}` }]);
     } finally {
       setLoading(false);
     }
   }, [input, loading, language, user, messages]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSend();
-    }
+    if (e.key === 'Enter') handleSend();
   };
 
   const handleSpeak = async (text: string, index: number) => {
     if (!text || ttsLoading) return;
     setTtsLoading(`tts-${index}`);
     try {
-        // Since we are using browser TTS, we call playAudio directly with the text
-        await playAudio(text);
+        const audioData = await textToSpeech(text);
+        await playAudio(audioData || text);
     } catch (e) {
         console.error("TTS failed", e);
     } finally {
@@ -95,126 +82,82 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
   };
 
   return (
-    <div className="h-screen w-screen bg-white flex flex-col font-sans animate-fade-in overflow-hidden">
-      <header className="bg-primary/5 border-b border-primary/10 shadow-sm z-10 shrink-0">
-        <div className="container mx-auto px-4 sm:px-5 py-3 sm:py-4 flex justify-between items-center max-w-4xl">
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            <div className="bg-primary p-2 sm:p-2.5 rounded-xl text-white shadow-lg shadow-primary/20">
-              <BotIcon className="w-6 h-6 sm:w-8 h-8" />
+    <div className="h-screen w-screen bg-background flex flex-col font-sans animate-fade-in overflow-hidden">
+      <header className="bg-white border-b border-gray-100 shadow-sm z-10 shrink-0">
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center max-w-4xl">
+          <div className="flex items-center space-x-3">
+            <div className="bg-primary p-2 rounded-xl text-white shadow-md">
+              <BotIcon className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-secondary leading-tight">{t('chatbot.title')}</h1>
-              <p className="text-[10px] text-primary/70 font-bold uppercase tracking-widest">{t('chatbot.subtitle')}</p>
+              <h1 className="text-xl font-black text-secondary leading-tight">{t('chatbot.title')}</h1>
+              <p className="text-[10px] text-primary/70 font-bold uppercase tracking-widest">OpenRouter AI Expert</p>
             </div>
           </div>
           <button 
-            onClick={() => {
-                resetChatSession();
-                navigateTo(Page.DASHBOARD);
-            }} 
-            className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all"
+            onClick={() => { resetChatSession(); navigateTo(Page.DASHBOARD); }} 
+            className="text-gray-400 hover:text-red-500 p-2 rounded-xl transition-all"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 sm:w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
       </header>
 
-      <div className="flex-grow p-4 sm:p-5 overflow-y-auto container mx-auto w-full max-w-4xl scroll-smooth">
-        <div className="flex flex-col space-y-6 sm:space-y-8 pb-4">
-          {messages.map((msg, index) => {
-            const isAlert = msg.text.includes('⚠️');
-            const cleanText = msg.text.replace('QUOTA_EXCEEDED: ', '').replace('AUTH_ERROR: ', '');
-
-            return (
-              <div key={index} className={`flex items-start gap-3 sm:gap-4 animate-fade-in ${msg.sender === 'user' ? 'justify-end' : ''}`}>
-                {msg.sender === 'bot' && !isAlert && (
-                  <div className="flex-shrink-0 bg-secondary text-white p-2 sm:p-2.5 rounded-xl shadow-md mt-1">
-                      <LeafIcon className="w-4 h-4 sm:w-5 h-5" />
+      <div className="flex-grow p-4 overflow-y-auto container mx-auto w-full max-w-4xl scroll-smooth">
+        <div className="flex flex-col space-y-4 pb-4">
+          {messages.map((msg, index) => (
+            <div key={index} className={`flex items-start gap-2 ${msg.sender === 'user' ? 'justify-end' : ''}`}>
+              {msg.sender === 'bot' && (
+                <div className="flex-shrink-0 bg-secondary text-white p-1.5 rounded-lg shadow-sm mt-1">
+                    <LeafIcon className="w-4 h-4" />
+                </div>
+              )}
+              <div className={`relative max-w-[85%] p-4 shadow-sm rounded-2xl ${
+                msg.sender === 'user' 
+                  ? 'bg-primary text-white rounded-tr-none' 
+                  : 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
+              }`}>
+                <div className={`prose prose-sm max-w-none ${msg.sender === 'user' ? 'prose-invert' : 'prose-green'}`}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                </div>
+                
+                {msg.sender === 'bot' && (
+                  <div className="flex justify-end mt-2">
+                    <button 
+                      onClick={() => handleSpeak(msg.text, index)} 
+                      disabled={!!ttsLoading} 
+                      className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 disabled:opacity-50"
+                    >
+                      {ttsLoading === `tts-${index}` ? (
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                      ) : (
+                        <SpeakerIcon className="w-4 h-4"/>
+                      )}
+                    </button>
                   </div>
                 )}
-                <div className={`relative w-full max-w-[90%] sm:max-w-[75%] p-4 sm:p-5 shadow-sm transition-all ${
-                  msg.sender === 'user' 
-                    ? 'bg-primary text-white rounded-2xl rounded-tr-none shadow-primary/10' 
-                    : isAlert 
-                      ? `w-full max-w-full border-2 border-red-500 bg-red-50 rounded-2xl shadow-lg`
-                      : 'bg-gray-50 text-gray-800 rounded-2xl rounded-tl-none border border-gray-100'
-                }`}>
-                  <div className={`prose prose-sm md:prose-base max-w-none ${msg.sender === 'user' ? 'prose-invert' : 'prose-green'} ${isAlert ? 'text-center' : ''}`}>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{cleanText ?? ""}</ReactMarkdown>
-                  </div>
-                  
-                  {msg.sources && msg.sources.length > 0 && (
-                    <div className="mt-4 pt-3 border-t border-gray-200">
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Sources:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {msg.sources.map((source, i) => (
-                          <a 
-                            key={i} 
-                            href={source.web?.uri} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-[10px] bg-white border border-gray-200 px-2 py-1 rounded-md text-primary font-bold hover:bg-primary/5 transition-colors truncate max-w-[150px]"
-                          >
-                            {source.web?.title || 'Source'}
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {isAlert && (
-                    <div className="mt-4 flex flex-col gap-2">
-                      <button 
-                        onClick={() => {
-                            const lastUserMsg = [...messages].reverse().find(m => m.sender === 'user');
-                            if (lastUserMsg) handleSend(lastUserMsg.text);
-                        }}
-                        className={`w-full py-3 bg-red-600 text-white font-black text-xs uppercase tracking-widest rounded-xl hover:opacity-90 transition-all shadow-md active:scale-95`}
-                      >
-                        🔄 पुन्हा प्रयत्न करा (Retry)
-                      </button>
-                    </div>
-                  )}
-
-                  {msg.sender === 'bot' && !isAlert && (
-                      <div className="absolute bottom-1 right-1">
-                          <button 
-                            onClick={() => handleSpeak(msg.text, index)} 
-                            disabled={!!ttsLoading} 
-                            className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-400 transition-colors disabled:opacity-50"
-                          >
-                              {ttsLoading === `tts-${index}` ? (
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                              ) : (
-                                  <SpeakerIcon className="w-4 h-4 sm:w-5 h-5"/>
-                              )}
-                          </button>
-                      </div>
-                  )}
-                </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
           {loading && (
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="flex-shrink-0 bg-secondary text-white p-2 sm:p-2.5 rounded-xl">
-                  <LeafIcon className="w-4 h-4 sm:w-5 h-5" />
+            <div className="flex items-start gap-2">
+              <div className="flex-shrink-0 bg-secondary text-white p-1.5 rounded-lg">
+                  <LeafIcon className="w-4 h-4" />
               </div>
-              <div className="bg-gray-50 border border-gray-100 p-4 sm:p-5 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-2">
-                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary/40 rounded-full animate-bounce"></span>
-                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                <span className="text-[9px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2">Searching & Thinking...</span>
+              <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></span>
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} className="h-4" />
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
-      <div className="p-3 sm:p-6 bg-white border-t border-gray-100 shrink-0">
+      <div className="p-4 bg-white border-t border-gray-50 shrink-0">
         <div className="container mx-auto w-full max-w-4xl relative">
           <input
             type="text"
@@ -222,15 +165,15 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={t('chatbot.placeholder')}
-            className="w-full pl-5 pr-16 py-3.5 sm:pl-6 sm:pr-20 sm:py-4.5 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/5 focus:outline-none transition-all placeholder:text-gray-300 text-base sm:text-lg font-bold"
+            className="w-full pl-5 pr-14 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/5 focus:outline-none transition-all font-bold text-sm"
             disabled={loading}
           />
           <button 
             onClick={() => handleSend()} 
             disabled={loading || input.trim() === ''} 
-            className="absolute right-1.5 top-1.5 bottom-1.5 sm:right-2 sm:top-2 sm:bottom-2 bg-primary text-white w-12 sm:w-14 rounded-xl hover:bg-green-700 disabled:bg-gray-200 shadow-lg shadow-primary/20 transition-all flex items-center justify-center group"
+            className="absolute right-2 top-2 bottom-2 bg-primary text-white w-12 rounded-xl hover:bg-green-700 disabled:bg-gray-200 transition-all flex items-center justify-center"
           >
-            <SendIcon className="w-5 h-5 sm:w-6 h-6 group-active:scale-90 transition-transform" />
+            <SendIcon className="w-5 h-5" />
           </button>
         </div>
       </div>

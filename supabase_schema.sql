@@ -1,3 +1,4 @@
+
 -- ========================================================
 -- Sheti Man AI - Consolidated Database Schema
 -- Run this in the Supabase SQL Editor (https://supabase.com/dashboard/project/_/sql)
@@ -30,12 +31,25 @@ CREATE TABLE IF NOT EXISTS public.user_questions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- 4. Enable Row Level Security (RLS)
+-- 4. Create Orders Table
+CREATE TABLE IF NOT EXISTS public.orders (
+  id TEXT PRIMARY KEY,
+  user_id uuid REFERENCES auth.users ON DELETE CASCADE NOT NULL,
+  customer_name TEXT NOT NULL,
+  shipping_address TEXT NOT NULL,
+  total NUMERIC(10, 2) NOT NULL,
+  status TEXT DEFAULT 'Pending',
+  items JSONB NOT NULL,
+  order_date TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- 5. Enable Row Level Security (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
--- 5. Create Policies (using DO blocks to prevent 'already exists' errors)
+-- 6. Create Policies (using DO blocks to prevent 'already exists' errors)
 DO $$
 BEGIN
     -- Profile Policies
@@ -58,10 +72,18 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can insert own questions.') THEN
         CREATE POLICY "Users can insert own questions." ON public.user_questions FOR INSERT WITH CHECK (auth.uid() = user_id);
     END IF;
+
+    -- Order Policies
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can view own orders.') THEN
+        CREATE POLICY "Users can view own orders." ON public.orders FOR SELECT USING (auth.uid() = user_id);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can place own orders.') THEN
+        CREATE POLICY "Users can place own orders." ON public.orders FOR INSERT WITH CHECK (auth.uid() = user_id);
+    END IF;
 END
 $$;
 
--- 6. Trigger Function to sync metadata (captures 'full_name', 'phone', 'avatar_url')
+-- 7. Trigger Function to sync metadata (captures 'full_name', 'phone', 'avatar_url')
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -76,12 +98,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 7. Setup the trigger for automatic profile creation
+-- 8. Setup the trigger for automatic profile creation
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
--- 8. Add useful indexes for performance
+-- 9. Add useful indexes for performance
 CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON public.tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_questions_user_id ON public.user_questions(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
