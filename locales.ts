@@ -24,6 +24,7 @@ export const translations: any = {
     title: { en: 'Local Weather', hi: 'स्थानीय मौसम', mr: 'स्थानिक हवामान' },
     humidity: { en: 'Humidity', hi: 'नमी', mr: 'आर्द्रता' },
     wind: { en: 'Wind Speed', hi: 'हवा की गति', mr: 'वाऱ्याचा वेग' },
+    windDirection: { en: 'Wind Direction', hi: 'हवा की दिशा', mr: 'वाऱ्याची दिशा' },
     deniedError: { en: 'Location access denied', hi: 'स्थान अनुमति अस्वीकार', mr: 'लोकेशन प्रवेश नाकारला' },
     allowRetry: { en: 'Retry with Location', hi: 'स्थान के साथ पुनः प्रयास करें', mr: 'लोकेशनसह पुन्हा प्रयत्न करा' }
   },

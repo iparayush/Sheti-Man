@@ -42,6 +42,7 @@ export interface Weather {
   temperature: number;
   condition: string;
   windSpeed: number;
+  windDirection: string;
   humidity: number;
   recommendation: string;
   location: string;

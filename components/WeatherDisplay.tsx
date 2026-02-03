@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Weather } from '../types';
 import { SunIcon, CloudIcon, RainIcon, WindIcon, ThermometerIcon, DropletIcon, BotIcon, MapPinIcon } from './icons';
@@ -29,7 +30,7 @@ const WeatherStatItem: React.FC<{ icon: React.ReactNode, value: string, label: s
     <div className="flex items-center gap-2">
         <div className="text-gray-400 opacity-70">{icon}</div>
         <div className="flex flex-col">
-            <span className="font-extrabold text-dark text-sm leading-none">{value}</span>
+            <span className="font-extrabold text-dark text-sm leading-none truncate max-w-[80px]">{value}</span>
             <span className="text-[10px] text-gray-400 uppercase tracking-tighter font-black">{label}</span>
         </div>
     </div>
@@ -82,13 +83,16 @@ const WeatherDisplay: React.FC<WeatherDisplayProps> = ({ weatherData, loading, e
             )}
 
             {!error && !loading && weatherData && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mt-2 border-t border-gray-50 pt-4">
-                    <div className="flex gap-8">
-                        <WeatherStatItem icon={<DropletIcon className="w-5 h-5" />} value={`${weatherData.humidity}%`} label={t('weather.humidity')} />
-                        <WeatherStatItem icon={<WindIcon className="w-5 h-5" />} value={`${weatherData.windSpeed}`} label={t('weather.wind')} />
+                <div className="flex flex-col mt-2 border-t border-gray-50 pt-4">
+                    <div className="flex justify-between items-center mb-4 overflow-x-auto">
+                        <div className="flex gap-6 pr-4">
+                            <WeatherStatItem icon={<DropletIcon className="w-5 h-5" />} value={`${weatherData.humidity}%`} label={t('weather.humidity')} />
+                            <WeatherStatItem icon={<WindIcon className="w-5 h-5" />} value={`${weatherData.windSpeed} km/h`} label={t('weather.wind')} />
+                            <WeatherStatItem icon={<WindIcon className="w-5 h-5 rotate-45 text-blue-400" />} value={weatherData.windDirection} label={t('weather.windDirection')} />
+                        </div>
                     </div>
                     
-                    <div className="flex-1 flex items-start gap-2.5 bg-accent/10 px-4 py-3 rounded-xl border border-accent/20">
+                    <div className="flex items-start gap-2.5 bg-accent/10 px-4 py-3 rounded-xl border border-accent/20">
                         <BotIcon className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                         <p className="text-sm text-secondary font-bold leading-tight italic">
                            {weatherData.recommendation}

@@ -21,6 +21,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
   const [input, setInput] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [ttsLoading, setTtsLoading] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,14 +44,14 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
     }
     
     setLoading(true);
+    setStatus(null);
 
     try {
       if (user?.id && user.id !== 'guest') {
-        await supabase.from('user_questions').insert([{ user_id: user.id, question_text: textToSend }]);
+        supabase.from('user_questions').insert([{ user_id: user.id, question_text: textToSend }]).then();
       }
 
-      // Format simple history for OpenRouter
-      const history = messages.slice(1).map(m => ({
+      const history = messages.slice(-6).map(m => ({
         role: m.sender === 'user' ? 'user' : 'assistant',
         content: m.text
       }));
@@ -58,9 +59,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
       const botResponse = await sendMessageToChat(textToSend, language, history);
       setMessages(prev => [...prev, { sender: 'bot', text: botResponse.text }]);
     } catch (e: any) {
-      setMessages(prev => [...prev, { sender: 'bot', text: `⚠️ **Error**\n\n${parseAiError(e)}` }]);
+      setMessages(prev => [...prev, { sender: 'bot', text: `⚠️ **Unable to connect to AI**\n\n${parseAiError(e)}` }]);
     } finally {
       setLoading(false);
+      setStatus(null);
     }
   }, [input, loading, language, user, messages]);
 
@@ -91,7 +93,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
             </div>
             <div>
               <h1 className="text-xl font-black text-secondary leading-tight">{t('chatbot.title')}</h1>
-              <p className="text-[10px] text-primary/70 font-bold uppercase tracking-widest">OpenRouter AI Expert</p>
+              <p className="text-[10px] text-primary/70 font-bold uppercase tracking-widest">Multi-Provider AI Expert</p>
             </div>
           </div>
           <button 
@@ -142,15 +144,18 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
             </div>
           ))}
           {loading && (
-            <div className="flex items-start gap-2">
-              <div className="flex-shrink-0 bg-secondary text-white p-1.5 rounded-lg">
-                  <LeafIcon className="w-4 h-4" />
+            <div className="flex flex-col items-start gap-2">
+              <div className="flex items-start gap-2">
+                <div className="flex-shrink-0 bg-secondary text-white p-1.5 rounded-lg">
+                    <LeafIcon className="w-4 h-4" />
+                </div>
+                <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span>
+                  <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                </div>
               </div>
-              <div className="bg-white border border-gray-100 p-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span>
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-              </div>
+              {status && <span className="text-[10px] text-gray-400 font-bold ml-10 italic uppercase tracking-widest">{status}</span>}
             </div>
           )}
           <div ref={messagesEndRef} />
