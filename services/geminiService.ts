@@ -198,6 +198,40 @@ export const getWeatherInfo = async (lat: number, lng: number, language: Languag
 };
 
 /**
+ * AI Tool: Government Scheme Search with Search Grounding
+ */
+export const getGovernmentSchemeInfo = async (query: string, language: Language) => {
+  const prompt = `Provide detailed, up-to-date information about the following government agricultural scheme or subsidy in ${language}: "${query}". 
+  
+  MANDATORY STRUCTURE:
+  1. # [Scheme Name]
+  2. ## Information & Benefits
+  3. ## Application Link & Steps (Include a clear URL button-like link if found)
+  4. ## Required Documents Chart (Provide a Markdown TABLE with columns: Document Name | Purpose/Notes)
+
+  Be precise and use official data from Google Search.`;
+  
+  try {
+    const ai = getGeminiClient();
+    if (!ai) throw new Error("Gemini Unavailable");
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview', // Using Pro for complex search grounding
+      contents: prompt,
+      config: {
+        tools: [{ googleSearch: {} }]
+      }
+    });
+    
+    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    return { text: response.text || "", sources };
+  } catch (error) {
+    console.warn("Search grounding failed, falling back to basic knowledge", error);
+    const text = await callOpenRouter(prompt, language);
+    return { text: text || "", sources: [] };
+  }
+};
+
+/**
  * AI Tool: Conversational Chat with Fallback
  */
 export const sendMessageToChat = async (message: string, language: Language, history: any[] = []) => {

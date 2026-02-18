@@ -4,7 +4,7 @@ import Card from './Card';
 import WeatherDisplay from './WeatherDisplay';
 import { Page, Weather } from '../types';
 import { getWeatherInfo } from '../services/geminiService';
-import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon } from './icons';
+import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, BankIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 import { useTasks } from '../context/TaskContext';
 
@@ -58,6 +58,24 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
           icon={<CameraIcon />} 
           onClick={() => navigateTo(Page.CROP_DOCTOR)} 
         />
+        
+        <Card 
+          title={t('dashboard.cards.schemes.title')} 
+          description={t('dashboard.cards.schemes.description')} 
+          color="#1565C0" 
+          icon={<BankIcon />} 
+          onClick={() => navigateTo(Page.GOVERNMENT_SCHEMES)} 
+        />
+
+        <div className="col-span-1">
+            <Card 
+              title={t('dashboard.cards.farmTasks.title')} 
+              description={t('dashboard.cards.farmTasks.description')} 
+              color="#00838F" 
+              icon={<ClipboardListIcon />} 
+              onClick={() => navigateTo(Page.FARM_TASKS)} 
+            />
+        </div>
 
         {/* AI Expert Chatbot Banner (Two Box / Full Width) */}
         <div className="col-span-2 mt-1">
@@ -83,48 +101,6 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
                   </svg>
                 </div>
               </div>
-            </div>
-        </div>
-
-        {/* Farm Tasks Management Card */}
-        <div className="col-span-2 mt-1">
-            <div 
-              className="bg-white rounded-3xl shadow-sm p-5 flex flex-col cursor-pointer transform active:scale-[0.98] transition-all duration-150 border border-gray-100 hover:border-emerald-200 hover:shadow-md group relative overflow-hidden"
-              onClick={() => navigateTo(Page.FARM_TASKS)}
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full -mr-12 -mt-12 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-
-              <div className="flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center transition-all duration-300 shadow-lg shadow-emerald-200/50">
-                      <ClipboardListIcon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-dark tracking-tight leading-none mb-1">{t('dashboard.cards.farmTasks.title')}</h3>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[9px] text-emerald-600 font-black uppercase tracking-widest">{t('dashboard.cards.farmTasks.description')}</span>
-                        {pendingCount > 0 && (
-                            <span className="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-md font-black animate-pulse">
-                                {pendingCount} Pending
-                            </span>
-                        )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {activeTasks.length > 0 && (
-                <div className="space-y-2 border-t border-gray-50 mt-4 pt-4 relative z-10">
-                  {activeTasks.map(task => (
-                    <div key={task.id} className="flex items-center gap-2.5">
-                      <div className="w-4 h-4 rounded border-2 border-emerald-100 flex items-center justify-center bg-emerald-50/30">
-                        <CheckSquareIcon className="w-2.5 h-2.5 text-emerald-400" />
-                      </div>
-                      <span className="text-xs font-bold text-gray-500 truncate">{task.text}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
         </div>
       </div>

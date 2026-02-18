@@ -14,7 +14,18 @@ export const translations: any = {
       cropDoctor: { title: { en: 'Disease Scan', hi: 'रोग स्कैन - इलाज', mr: 'रोग स्कॅन - उपचार' }, description: { en: 'Diagnosis', hi: 'इलाज', mr: 'उपचार' } },
       farmTasks: { title: { en: 'कामे - नोंद', hi: 'कार्य - नोट', mr: 'कामे - नोंद' }, description: { en: 'Farm Log', hi: 'नोंद', mr: 'नोंद' } },
       chatbot: { title: { en: 'तज्ञ - चॅट', hi: 'विशेषज्ञ चैट', mr: 'तज्ञ - चॅट' }, description: { en: 'AI Expert', hi: 'तज्ञ', mr: 'तज्ञ' } },
+      schemes: { title: { en: 'Schemes & Subsidies', hi: 'योजनाएं और सब्सिडी', mr: 'योजना आणि सबसिडी' }, description: { en: 'Govt. Info', hi: 'सरकारी जानकारी', mr: 'सरकारी माहिती' } },
     }
+  },
+  schemes: {
+    title: { en: 'Schemes & Subsidies', hi: 'योजनाएं और सब्सिडी', mr: 'योजना आणि सबसिडी' },
+    searchPlaceholder: { en: 'Search for PM-Kisan, Irrigation, etc...', hi: 'पीएम-किसान, सिंचाई, आदि खोजें...', mr: 'पीएम-किसान, सिंचन इ. शोधा...' },
+    popularTitle: { en: 'Popular Categories', hi: 'लोकप्रिय श्रेणियां', mr: 'लोकप्रिय श्रेणी' },
+    loan: { en: 'Farm Loans', hi: 'कृषि ऋण', mr: 'कृषी कर्ज' },
+    insurance: { en: 'Crop Insurance', hi: 'फसल बीमा', mr: 'पीक विमा' },
+    irrigation: { en: 'Irrigation Subsidy', hi: 'सिंचाई सब्सिडी', mr: 'सिंचन सबसिडी' },
+    pmkisan: { en: 'PM Kisan', hi: 'पीएम किसान', mr: 'पीएम किसान' },
+    noResults: { en: 'No scheme selected. Use search or categories.', hi: 'कोई योजना नहीं चुनी गई। खोज या श्रेणियों का उपयोग करें।', mr: 'कोणतीही योजना निवडली नाही. शोध किंवा श्रेणी वापरा.' }
   },
   loginPage: {
     title: { en: 'shetiman', hi: 'शेटिमन', mr: 'शेटिमन' },

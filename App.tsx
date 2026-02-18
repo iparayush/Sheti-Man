@@ -13,6 +13,7 @@ import FarmTasksPage from './components/FarmTasksPage';
 import Store from './components/Store';
 import CheckoutPage from './components/CheckoutPage';
 import OrderHistoryPage from './components/OrderHistoryPage';
+import GovernmentSchemes from './components/GovernmentSchemes';
 import QRCodeModal from './components/QRCodeModal';
 import CartModal from './components/CartModal';
 import { useAuth } from './context/AuthContext';
@@ -100,6 +101,7 @@ const App: React.FC = () => {
       case Page.STORE: return <Store addToCart={addToCart} />;
       case Page.CHECKOUT: return <CheckoutPage cartItems={cartItems} clearCart={clearCart} navigateTo={navigateTo} />;
       case Page.ORDER_HISTORY: return <OrderHistoryPage />;
+      case Page.GOVERNMENT_SCHEMES: return <GovernmentSchemes />;
       default: return <Dashboard navigateTo={navigateTo} />;
     }
   };

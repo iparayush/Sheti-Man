@@ -15,6 +15,12 @@ export const BotIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const BankIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+  </svg>
+);
+
 export const ScienceIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.675.337a4 4 0 01-2.586.344l-2.011-.335a2 2 0 00-1.032.067l-1.033.344a2 2 0 00-1.125 1.125l-.344 1.033a2 2 0 00.067 1.032l.335 2.011a4 4 0 01-.344 2.586l-.337.675a6 6 0 00-.517 3.86l.477 2.387a2 2 0 00.547 1.022l1.428 1.428a2 2 0 001.022.547l2.387.477a6 6 0 003.86-.517l.675-.337a4 4 0 012.586-.344l2.011.335a2 2 0 001.032-.067l1.033-.344a2 2 0 001.125-1.125l.344-1.033a2 2 0 00-.067-1.032l-.335-2.011a4 4 0 01.344-2.586l.337-.675a6 6 0 00.517-3.86l-.477-2.387a2 2 0 00-.547-1.022l-1.428-1.428z" />
