@@ -234,21 +234,38 @@ export const getGovernmentSchemeInfo = async (query: string, language: Language)
 /**
  * AI Tool: Conversational Chat with Fallback
  */
-export const sendMessageToChat = async (message: string, language: Language, history: any[] = []) => {
+export const sendMessageToChat = async (message: string, language: Language, history: any[] = [], imageFile?: File) => {
+  let base64 = "";
+  if (imageFile) {
+    base64 = await fileToBase64(imageFile);
+  }
+
   try {
     const ai = getGeminiClient();
     if (!ai) throw new Error("Gemini Unavailable");
     
-    // We use a simple generateContent for high frequency chat to stay in free tier
     const prompt = `Chat History: ${JSON.stringify(history.slice(-4))}\n\nUser Question: ${message}\n\nLanguage: ${language}. Answer as 'shetiman' expert.`;
+    
+    let contents: any;
+    if (imageFile) {
+      contents = {
+        parts: [
+          { inlineData: { data: base64, mimeType: imageFile.type } },
+          { text: prompt }
+        ]
+      };
+    } else {
+      contents = prompt;
+    }
+
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: contents,
     });
     return { text: response.text || "", sources: [] };
   } catch (error) {
     console.warn("Chat fallback triggered");
-    const text = await callOpenRouter(message, language, history);
+    const text = await callOpenRouter(message, language, history, base64 || undefined, imageFile?.type);
     return { text: text || "", sources: [] };
   }
 };

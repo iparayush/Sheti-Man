@@ -15,6 +15,8 @@ export const translations: any = {
       farmTasks: { title: { en: 'कामे - नोंद', hi: 'कार्य - नोट', mr: 'कामे - नोंद' }, description: { en: 'Farm Log', hi: 'नोंद', mr: 'नोंद' } },
       chatbot: { title: { en: 'तज्ञ - चॅट', hi: 'विशेषज्ञ चैट', mr: 'तज्ञ - चॅट' }, description: { en: 'AI Expert', hi: 'तज्ञ', mr: 'तज्ञ' } },
       schemes: { title: { en: 'Schemes & Subsidies', hi: 'योजनाएं और सब्सिडी', mr: 'योजना आणि सबसिडी' }, description: { en: 'Govt. Info', hi: 'सरकारी जानकारी', mr: 'सरकारी माहिती' } },
+      soilAnalyzer: { title: { en: 'Soil Scan', hi: 'मिट्टी स्कैन', mr: 'माती स्कॅन' }, description: { en: 'Health Test', hi: 'स्वास्थ्य परीक्षण', mr: 'आरोग्य चाचणी' } },
+      marketPrices: { title: { en: 'Market Prices', hi: 'बाजार भाव', mr: 'बाजार भाव' }, description: { en: 'Live Rates', hi: 'लाइव दर', mr: 'लाईव्ह दर' } },
     }
   },
   schemes: {
@@ -92,5 +94,13 @@ export const translations: any = {
   qrCodeModal: {
     title: { en: 'Share App', hi: 'ऐप साझा करें', mr: 'ॲप शेअर करा' },
     instruction: { en: 'Scan this code to open the app on another phone.', hi: 'दूसरे फोन पर ऐप खोलने के लिए इस कोड को स्कैन करें।', mr: 'दुसऱ्या फोनवर ॲप उघडण्यासाठी हा कोड स्कॅन करा.' }
+  },
+  soilAnalyzer: {
+    title: { en: 'AI Soil Health Scan', hi: 'एआई मिट्टी स्वास्थ्य स्कैन', mr: 'एआय माती आरोग्य स्कॅन' }
+  },
+  marketPrices: {
+    title: { en: 'Market Prices', hi: 'बाजार भाव', mr: 'बाजार भाव' },
+    subheading: { en: 'Live Mandi Rates', hi: 'लाइव मंडी दर', mr: 'लाईव्ह मंडी दर' },
+    expertInsight: { en: 'Expert Insight', hi: 'विशेषज्ञ अंतर्दृष्टि', mr: 'तज्ञ अंतर्दृष्टी' }
   }
 };

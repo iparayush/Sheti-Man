@@ -2,12 +2,12 @@
 import React, { useState, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { getFertilizerRecommendation } from '../services/geminiService';
+import { getFertilizerRecommendation, textToSpeech } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
 import { RecommendationFormState } from '../types';
-import Spinner from './Spinner';
-import { SpeakerIcon, BotIcon } from './icons';
+import { SpeakerIcon, ScienceIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
+import { ExpertAdvice, ThinkingState } from './DesignSystem';
 
 const RecommendationForm: React.FC = () => {
   const { language, t } = useLocalization();
@@ -49,7 +49,10 @@ const RecommendationForm: React.FC = () => {
     if (!text || ttsLoading) return;
     setTtsLoading(true);
     try {
-        await playAudio(text);
+        const audioData = await textToSpeech(text);
+        if (audioData) {
+            await playAudio(audioData);
+        }
     } catch(e) {
         setError("Sorry, we couldn't read the text aloud.");
     } finally {
@@ -58,66 +61,97 @@ const RecommendationForm: React.FC = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6 pb-28">
-      <h2 className="text-4xl font-black text-secondary mb-10 text-center tracking-tighter">{t('recommendationForm.title')}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-md space-y-6">
-          <div>
-            <label htmlFor="cropName" className="block text-sm font-bold text-gray-700 mb-2">{t('recommendationForm.cropNameLabel')}</label>
-            <input type="text" name="cropName" id="cropName" value={formData.cropName} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-lg font-medium" required />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+    <div className="container mx-auto px-4 py-6 animate-fade-in max-w-lg pb-20">
+      <div className="mb-8">
+        <h2 className="text-3xl font-black text-secondary tracking-tighter leading-none">{t('recommendationForm.title')}</h2>
+        <p className="text-sm text-gray-400 font-bold mt-2 uppercase tracking-wider">AI Crop Optimization</p>
+      </div>
+
+      <div className="space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-black/5 space-y-6">
+          <div className="space-y-4">
             <div>
-              <label htmlFor="soilPH" className="block text-sm font-bold text-gray-700 mb-2">{t('recommendationForm.soilPhLabel')}</label>
-              <input type="number" name="soilPH" id="soilPH" value={formData.soilPH} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-lg font-medium" step="0.1" min="0" max="14" required />
+              <label htmlFor="cropName" className="text-[10px] font-black text-primary uppercase tracking-widest mb-1.5 block ml-1">{t('recommendationForm.cropNameLabel')}</label>
+              <input type="text" name="cropName" id="cropName" value={formData.cropName} onChange={handleChange} className="w-full p-4 bg-background border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all" required />
             </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="soilPH" className="text-[10px] font-black text-primary uppercase tracking-widest mb-1.5 block ml-1">{t('recommendationForm.soilPhLabel')}</label>
+                <input type="number" name="soilPH" id="soilPH" value={formData.soilPH} onChange={handleChange} className="w-full p-4 bg-background border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all" step="0.1" min="0" max="14" required />
+              </div>
+              <div>
+                <label htmlFor="soilMoisture" className="text-[10px] font-black text-primary uppercase tracking-widest mb-1.5 block ml-1">{t('recommendationForm.soilMoistureLabel')}</label>
+                <input type="number" name="soilMoisture" id="soilMoisture" value={formData.soilMoisture} onChange={handleChange} className="w-full p-4 bg-background border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all" min="0" max="100" required />
+              </div>
+            </div>
+
             <div>
-              <label htmlFor="soilMoisture" className="block text-sm font-bold text-gray-700 mb-2">{t('recommendationForm.soilMoistureLabel')}</label>
-              <input type="number" name="soilMoisture" id="soilMoisture" value={formData.soilMoisture} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-lg font-medium" min="0" max="100" required />
+              <label htmlFor="climate" className="text-[10px] font-black text-primary uppercase tracking-widest mb-1.5 block ml-1">{t('recommendationForm.climateLabel')}</label>
+              <input type="text" name="climate" id="climate" value={formData.climate} onChange={handleChange} className="w-full p-4 bg-background border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all" placeholder={t('recommendationForm.climatePlaceholder')} required />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-black text-primary uppercase tracking-widest mb-1.5 block ml-1">{t('recommendationForm.npkLabel')}</label>
+              <div className="grid grid-cols-3 gap-3">
+                <input type="number" name="nitrogen" placeholder="N" value={formData.nitrogen} onChange={handleChange} className="w-full p-4 bg-background border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all" required />
+                <input type="number" name="phosphorus" placeholder="P" value={formData.phosphorus} onChange={handleChange} className="w-full p-4 bg-background border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all" required />
+                <input type="number" name="potassium" placeholder="K" value={formData.potassium} onChange={handleChange} className="w-full p-4 bg-background border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all" required />
+              </div>
             </div>
           </div>
-          <div>
-            <label htmlFor="climate" className="block text-sm font-bold text-gray-700 mb-2">{t('recommendationForm.climateLabel')}</label>
-            <input type="text" name="climate" id="climate" value={formData.climate} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-lg font-medium" placeholder={t('recommendationForm.climatePlaceholder')} required />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">{t('recommendationForm.npkLabel')}</label>
-            <div className="grid grid-cols-3 gap-3">
-              <input type="number" name="nitrogen" placeholder="N" value={formData.nitrogen} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-lg font-medium" required />
-              <input type="number" name="phosphorus" placeholder="P" value={formData.phosphorus} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-lg font-medium" required />
-              <input type="number" name="potassium" placeholder="K" value={formData.potassium} onChange={handleChange} className="block w-full px-4 py-3 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary text-lg font-medium" required />
-            </div>
-          </div>
-          <button type="submit" disabled={loading} className="w-full bg-primary text-white py-4 px-6 rounded-xl font-bold text-xl hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-primary/20 disabled:bg-gray-400 transition-all shadow-lg shadow-primary/20">
-            {loading ? t('recommendationForm.submittingButton') : t('recommendationForm.submitButton')}
+
+          <button 
+            type="submit" 
+            disabled={loading} 
+            className="w-full bg-primary text-white py-4 px-6 rounded-2xl font-black uppercase tracking-[0.15em] shadow-lg shadow-primary/20 hover:bg-secondary active:scale-[0.98] transition-all disabled:bg-gray-200 disabled:shadow-none disabled:text-gray-400"
+          >
+            {loading ? 'Calculating...' : t('recommendationForm.submitButton')}
           </button>
         </form>
 
-        <div className="bg-white p-8 rounded-2xl shadow-md space-y-8 min-h-[400px]">
-          {loading && <div className="flex justify-center items-center h-full"><Spinner /></div>}
-          {error && <p className="text-lg text-red-500 font-bold text-center">{error}</p>}
-          
-          {result && result.text && (
-            <div className="animate-fade-in">
-              <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-50">
-                <h3 className="text-2xl font-black text-secondary tracking-tight">{t('recommendationForm.resultTitle')}</h3>
-                <button onClick={() => handleSpeak(result.text)} disabled={ttsLoading} className="p-3 rounded-xl hover:bg-gray-100 transition-colors disabled:opacity-50" aria-label="Read recommendation aloud">
-                    {ttsLoading ? <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div> : <SpeakerIcon className="w-6 h-6 text-secondary" />}
+        {loading && (
+          <div className="flex justify-center py-4">
+            <ThinkingState label="Generating Plan..." />
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3">
+            <span className="text-xl">⚠️</span>
+            <p className="text-xs font-bold text-red-700">{error}</p>
+          </div>
+        )}
+        
+        {result && result.text && (
+          <div className="animate-slide-up">
+            <ExpertAdvice title={t('recommendationForm.resultTitle')}>
+              <div className="flex justify-end mb-4 -mt-12 relative z-20">
+                <button 
+                  onClick={() => handleSpeak(result.text)} 
+                  disabled={ttsLoading} 
+                  className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm hover:shadow-md active:scale-90 transition-all disabled:opacity-50"
+                >
+                  {ttsLoading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                  ) : (
+                    <SpeakerIcon className="w-6 h-6 text-primary" />
+                  )}
                 </button>
               </div>
-              <div className="prose prose-lg max-w-none prose-green">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.text}</ReactMarkdown>
-              </div>
-            </div>
-          )}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.text}</ReactMarkdown>
+            </ExpertAdvice>
+          </div>
+        )}
 
-          {!loading && !result && !error && (
-            <div className="flex flex-col items-center justify-center h-full text-center opacity-40">
-                <BotIcon className="w-20 h-20 text-gray-200 mb-4" />
-                <p className="text-lg text-gray-500 font-bold">{t('recommendationForm.placeholder')}</p>
+        {!loading && !result && !error && (
+          <div className="text-center py-10 opacity-30">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+               <ScienceIcon className="w-10 h-10 text-gray-400" />
             </div>
-          )}
-        </div>
+            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{t('recommendationForm.placeholder')}</p>
+          </div>
+        )}
       </div>
     </div>
   );

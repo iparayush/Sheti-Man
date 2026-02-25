@@ -10,7 +10,7 @@ const SupplierDashboard: React.FC = () => {
 
     return (
         <div className="container mx-auto px-4 py-8 flex-grow">
-            <div className="mb-10 text-center">
+            <div className="mb-10 text-center bg-[#E0F2F7] p-8 rounded-3xl">
                 <h1 className="text-4xl font-bold text-secondary">{t('supplierDashboard.title')}</h1>
                 <p className="text-xl text-gray-700">{t('supplierDashboard.welcome')} {user?.name}!</p>
             </div>

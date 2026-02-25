@@ -59,7 +59,7 @@ const LoginPage: React.FC = () => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-gold/5 rounded-full blur-3xl"></div>
 
       <div className="relative bg-white/90 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] shadow-2xl border border-white max-w-md w-full animate-slide-up z-10">
-        <div className="flex flex-col items-center mb-10 text-center">
+        <div className="flex flex-col items-center mb-10 text-center bg-[#E0F2F7] p-6 rounded-3xl">
           <div className="w-24 h-24 mb-6">
             <AgriFertiLogo className="w-full h-full drop-shadow-xl" />
           </div>

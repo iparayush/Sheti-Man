@@ -4,7 +4,7 @@ import Card from './Card';
 import WeatherDisplay from './WeatherDisplay';
 import { Page, Weather } from '../types';
 import { getWeatherInfo } from '../services/geminiService';
-import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, BankIcon } from './icons';
+import { ScienceIcon, BotIcon, CameraIcon, ClipboardListIcon, CheckSquareIcon, BankIcon, LeafIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 import { useTasks } from '../context/TaskContext';
 
@@ -58,7 +58,40 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
           icon={<CameraIcon />} 
           onClick={() => navigateTo(Page.CROP_DOCTOR)} 
         />
+
+        <div className="col-span-2">
+          <div 
+            className="bg-white rounded-[2.5rem] shadow-sm p-6 flex items-center cursor-pointer transform active:scale-[0.98] transition-all duration-150 border border-black/5 hover:border-primary/10 hover:shadow-md group relative overflow-hidden"
+            onClick={() => navigateTo(Page.SOIL_ANALYZER)}
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+            <div className="flex items-center gap-5 relative z-10 w-full">
+              <div className="w-16 h-16 rounded-3xl bg-primary text-white flex items-center justify-center transition-all duration-300 shadow-lg shadow-primary/20 group-hover:rotate-3">
+                  <ScienceIcon className="w-8 h-8" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-2xl font-black text-dark tracking-tighter leading-none mb-1.5">{t('dashboard.cards.soilAnalyzer.title')}</h3>
+                <p className="text-[11px] text-primary font-black uppercase tracking-[0.2em]">
+                  {t('dashboard.cards.soilAnalyzer.description')}
+                </p>
+              </div>
+              <div className="bg-background p-3 rounded-2xl text-primary/30 group-hover:text-primary transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
         
+        <Card 
+          title={t('dashboard.cards.marketPrices.title')} 
+          description={t('dashboard.cards.marketPrices.description')} 
+          color="#FBC02D" 
+          icon={<LeafIcon />} 
+          onClick={() => navigateTo(Page.MARKET_PRICES)} 
+        />
+
         <Card 
           title={t('dashboard.cards.schemes.title')} 
           description={t('dashboard.cards.schemes.description')} 
@@ -77,31 +110,14 @@ const Dashboard: React.FC<{ navigateTo: (page: Page) => void }> = ({ navigateTo 
             />
         </div>
 
-        {/* AI Expert Chatbot Banner (Two Box / Full Width) */}
-        <div className="col-span-2 mt-1">
-            <div 
-              className="bg-white rounded-3xl shadow-sm p-5 flex items-center cursor-pointer transform active:scale-[0.98] transition-all duration-150 border border-gray-100 hover:border-orange-200 hover:shadow-md group relative overflow-hidden"
-              onClick={() => navigateTo(Page.CHATBOT)}
-            >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-full -mr-12 -mt-12 opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
-
-              <div className="flex items-center gap-4 relative z-10 w-full">
-                <div className="w-14 h-14 rounded-2xl bg-[#F57C00] text-white flex items-center justify-center transition-all duration-300 shadow-lg shadow-orange-200/50 group-hover:rotate-6">
-                    <BotIcon className="w-7 h-7" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-black text-dark tracking-tight leading-none mb-1">{t('dashboard.cards.chatbot.title')}</h3>
-                  <p className="text-[11px] text-orange-600 font-black uppercase tracking-[0.15em]">
-                    {t('dashboard.cards.chatbot.description')}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-full text-gray-300 group-hover:text-orange-400 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              </div>
-            </div>
+        <div className="col-span-1">
+            <Card 
+              title={t('dashboard.cards.chatbot.title')} 
+              description={t('dashboard.cards.chatbot.description')} 
+              color="#F57C00" 
+              icon={<BotIcon />} 
+              onClick={() => navigateTo(Page.CHATBOT)} 
+            />
         </div>
       </div>
     </div>

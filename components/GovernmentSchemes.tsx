@@ -161,7 +161,7 @@ const GovernmentSchemes: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="prose prose-blue max-w-none mb-10 overflow-x-auto">
+                <div className="prose prose-blue max-w-none mb-10 overflow-x-auto bg-[#E0F2F7] p-6 rounded-3xl">
                     {/* The markdown will contain the Documents Name Chart as a table */}
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{results.fullData.text}</ReactMarkdown>
                 </div>

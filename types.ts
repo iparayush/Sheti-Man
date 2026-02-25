@@ -20,6 +20,7 @@ export interface CalculatorFormState {
 export interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
+  image?: string;
   sources?: any[];
 }
 
@@ -36,7 +37,9 @@ export enum Page {
   STORE,
   CHECKOUT,
   ORDER_HISTORY,
-  GOVERNMENT_SCHEMES
+  GOVERNMENT_SCHEMES,
+  MARKET_PRICES,
+  SOIL_ANALYZER
 }
 
 export interface Weather {
