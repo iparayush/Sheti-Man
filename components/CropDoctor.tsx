@@ -2,11 +2,11 @@
 import React, { useState, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Camera, Volume2, Sparkles, X, Stethoscope } from 'lucide-react';
 import { analyzeCropImage, textToSpeech } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
-import { UploadIcon, SpeakerIcon, LeafIcon, ScienceIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
-import { ExpertAdvice, ThinkingState } from './DesignSystem';
+import { ExpertAdvice, AiThinkingLoader } from './DesignSystem';
 
 const CropDoctor: React.FC = () => {
   const { language, t } = useLocalization();
@@ -66,15 +66,22 @@ const CropDoctor: React.FC = () => {
     }
   }
 
+  const clearImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImageFile(null);
+    setImagePreview('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   return (
-    <div className="container mx-auto px-4 py-6 animate-fade-in max-w-lg pb-20">
+    <div className="container mx-auto px-4 pt-4 pb-24 animate-fade-in max-w-4xl">
       <div className="mb-8">
-        <h2 className="text-3xl font-black text-secondary tracking-tighter leading-none">{t('cropDoctor.title')}</h2>
-        <p className="text-sm text-gray-400 font-bold mt-2 uppercase tracking-wider">AI Plant Disease Expert</p>
+        <h2 className="text-4xl font-black text-secondary tracking-tighter">{t('cropDoctor.title')}</h2>
+        <p className="text-sm text-gray-400 font-bold uppercase tracking-widest mt-1">AI Plant Disease Expert</p>
       </div>
 
       <div className="space-y-6">
-        <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-black/5 flex flex-col items-center relative overflow-hidden">
+        <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-black/5 flex flex-col items-center relative overflow-hidden">
             <input 
               type="file" 
               accept="image/*" 
@@ -86,38 +93,41 @@ const CropDoctor: React.FC = () => {
             
             <div 
               onClick={triggerFileSelect} 
-              className="w-full h-72 bg-background rounded-3xl flex flex-col justify-center items-center cursor-pointer hover:bg-gray-50 mb-6 border-2 border-dashed border-primary/20 transition-all relative overflow-hidden group"
+              className="w-full h-80 bg-background rounded-[2.5rem] flex flex-col justify-center items-center cursor-pointer hover:bg-gray-50 mb-8 border-2 border-dashed border-primary/20 transition-all relative overflow-hidden group"
             >
                 {imagePreview ? (
                     <div className="relative w-full h-full">
                       <img src={imagePreview} alt="Crop preview" className="w-full h-full object-cover" />
                       {loading && (
-                        <div className="absolute inset-0 bg-primary/20 backdrop-blur-[2px] flex items-center justify-center">
-                          <ThinkingState label="Consulting AI Doctor..." />
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-md flex items-center justify-center z-20">
+                          <AiThinkingLoader label="Consulting AI Doctor..." />
                         </div>
                       )}
-                      <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-lg group-hover:scale-110 transition-transform">
-                         <UploadIcon className="w-5 h-5 text-primary" />
-                      </div>
+                      <button 
+                        onClick={clearImage}
+                        className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-lg hover:bg-red-50 hover:text-red-600 transition-all z-30"
+                      >
+                        <X size={20} />
+                      </button>
                     </div>
                 ) : (
-                    <div className="text-center px-6">
-                        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <UploadIcon className="w-8 h-8 text-primary" />
+                    <div className="text-center px-8">
+                        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                          <Camera size={32} className="text-primary" />
                         </div>
-                        <p className="font-bold text-dark">{t('cropDoctor.uploadPrompt')}</p>
-                        <p className="text-xs text-gray-400 font-medium mt-1">{t('cropDoctor.uploadHint')}</p>
+                        <p className="text-xl font-black text-dark tracking-tight">{t('cropDoctor.uploadPrompt')}</p>
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-2">{t('cropDoctor.uploadHint')}</p>
                     </div>
                 )}
             </div>
 
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-6">
               <div className="relative">
                 <textarea
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder={t('cropDoctor.promptPlaceholder')}
-                    className="w-full p-4 bg-background border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400"
+                    className="w-full p-6 bg-background border-none rounded-3xl text-sm font-bold focus:ring-4 focus:ring-primary/5 transition-all placeholder:text-gray-400"
                     rows={3}
                 />
               </div>
@@ -125,47 +135,50 @@ const CropDoctor: React.FC = () => {
               <button 
                 onClick={handleAnalyze} 
                 disabled={loading || !imageFile} 
-                className="w-full bg-primary text-white py-4 px-6 rounded-2xl font-black uppercase tracking-[0.15em] shadow-lg shadow-primary/20 hover:bg-secondary active:scale-[0.98] transition-all disabled:bg-gray-200 disabled:shadow-none disabled:text-gray-400"
+                className="w-full bg-primary text-white py-5 px-8 rounded-3xl font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-secondary active:scale-[0.98] transition-all disabled:bg-gray-100 disabled:shadow-none disabled:text-gray-300 flex items-center justify-center gap-3"
               >
-                  {loading ? 'Consulting...' : t('cropDoctor.submitButton')}
+                  {loading ? (
+                    <>
+                      <Sparkles size={20} className="animate-pulse" />
+                      Consulting...
+                    </>
+                  ) : (
+                    <>
+                      <Stethoscope size={20} />
+                      {t('cropDoctor.submitButton')}
+                    </>
+                  )}
               </button>
             </div>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3">
-            <span className="text-xl">⚠️</span>
-            <p className="text-xs font-bold text-red-700">{error}</p>
+          <div className="bg-red-50 border border-red-100 p-6 rounded-3xl flex items-center gap-4 animate-shake">
+            <span className="text-2xl">⚠️</span>
+            <p className="text-sm font-black text-red-700 uppercase tracking-tight">{error}</p>
           </div>
         )}
 
         {result && (
           <div className="animate-slide-up">
             <ExpertAdvice title={t('cropDoctor.resultTitle')}>
-              <div className="flex justify-end mb-4 -mt-12 relative z-20">
+              <div className="flex justify-end mb-4 -mt-14 relative z-20">
                 <button 
                   onClick={handleSpeak} 
                   disabled={ttsLoading} 
-                  className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm hover:shadow-md active:scale-90 transition-all disabled:opacity-50"
+                  className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl active:scale-90 transition-all disabled:opacity-50 border border-black/5"
                 >
                   {ttsLoading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                   ) : (
-                    <SpeakerIcon className="w-6 h-6 text-primary" />
+                    <Volume2 size={24} className="text-primary" />
                   )}
                 </button>
               </div>
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
+              <div className="prose prose-green max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{result}</ReactMarkdown>
+              </div>
             </ExpertAdvice>
-          </div>
-        )}
-        
-        {!loading && !result && !error && (
-          <div className="text-center py-10 opacity-30">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-               <ScienceIcon className="w-10 h-10 text-gray-400" />
-            </div>
-            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{t('cropDoctor.placeholder')}</p>
           </div>
         )}
       </div>

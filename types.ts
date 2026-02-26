@@ -39,7 +39,9 @@ export enum Page {
   ORDER_HISTORY,
   GOVERNMENT_SCHEMES,
   MARKET_PRICES,
-  SOIL_ANALYZER
+  SOIL_ANALYZER,
+  MY_CROPS,
+  PROFILE
 }
 
 export interface Weather {

@@ -39,13 +39,28 @@ interface ExpertAdviceProps {
 
 export const ExpertAdvice: React.FC<ExpertAdviceProps> = ({ title = "Expert Advice", children, icon }) => (
   <div className="relative overflow-hidden bg-[#F1F5F1] rounded-[2.5rem] p-8 border-l-8 border-primary shadow-sm">
-    <div className="absolute top-[-20px] right-[-20px] opacity-5 text-primary">
+    <div className="absolute top-[-20px] right-[-20px] opacity-5 text-primary pointer-events-none">
       {icon || <LeafIcon className="w-40 h-40" />}
     </div>
+    <div className="absolute top-4 right-4 opacity-10 text-primary pointer-events-none">
+      <LeafIcon className="w-8 h-8" />
+    </div>
     <h4 className="font-serif italic text-2xl text-secondary mb-3 relative z-10">{title}</h4>
-    <div className="text-sm leading-relaxed text-gray-700 font-medium relative z-10 prose prose-sm max-w-none">
+    <div className="text-sm leading-relaxed text-gray-700 font-medium relative z-10 prose prose-sm max-w-none italic">
       {children}
     </div>
+  </div>
+);
+
+export const AiThinkingLoader: React.FC<{ label?: string }> = ({ label = "Analyzing..." }) => (
+  <div className="flex flex-col items-center justify-center p-8 space-y-4">
+    <div className="relative">
+      <div className="w-20 h-20 bg-primary/20 rounded-full animate-ping absolute inset-0" />
+      <div className="w-20 h-20 bg-primary/40 rounded-full animate-pulse relative flex items-center justify-center">
+        <LeafIcon className="w-10 h-10 text-white animate-bounce" />
+      </div>
+    </div>
+    <span className="text-sm font-black text-primary uppercase tracking-[0.3em] animate-pulse">{label}</span>
   </div>
 );
 
