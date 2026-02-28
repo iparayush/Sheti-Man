@@ -4,11 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useLocalization } from '../context/LocalizationContext';
 import { AgriFertiLogo } from './icons';
 import { supabase } from '../services/supabaseClient';
-import { UserCircle, ArrowRight } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const { t } = useLocalization();
-  const { loginAsGuest } = useAuth();
   
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -151,24 +149,6 @@ const LoginPage: React.FC = () => {
             {loading ? "Processing..." : (view === 'login' ? 'Sign In' : 'Create Account')}
           </button>
         </form>
-
-        <div className="relative my-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-100"></div>
-          </div>
-          <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-black">
-            <span className="bg-white px-4 text-gray-300">Or</span>
-          </div>
-        </div>
-
-        <button 
-          onClick={loginAsGuest}
-          className="w-full py-5 bg-white border-2 border-primary/10 text-primary rounded-2xl font-black text-xs uppercase tracking-[0.25em] hover:bg-primary/5 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
-        >
-          <UserCircle size={18} />
-          Continue as Guest
-          <ArrowRight size={14} className="opacity-50" />
-        </button>
 
         <div className="flex justify-center mt-8">
           <button 
