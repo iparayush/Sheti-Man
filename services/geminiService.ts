@@ -21,7 +21,8 @@ const callOpenRouter = async (prompt: string, language: Language, history: any[]
   const messages: any[] = [
     { 
       role: "system", 
-      content: `You are 'shetiman', an expert AI organic farming advisor. Language: ${language}. Be professional, empathetic, and concise.` 
+      content: `You are 'shetiman', an expert AI organic farming advisor. Language: ${language}. Be professional, empathetic, and concise. 
+      When providing structured data, ALWAYS use Markdown TABLES for a professional poster-like look.` 
     },
     ...history
   ];
@@ -240,7 +241,7 @@ export const getGovernmentSchemeInfo = async (query: string, language: Language)
   3. ## Application Link & Steps (Include a clear URL button-like link if found)
   4. ## Required Documents Chart (Provide a Markdown TABLE with columns: Document Name | Purpose/Notes)
 
-  Be precise and use official data from Google Search.`;
+  Style the output to be clear and professional, like an informative poster for farmers.`;
   
   try {
     const ai = getGeminiClient();
@@ -275,7 +276,10 @@ export const sendMessageToChat = async (message: string, language: Language, his
     const ai = getGeminiClient();
     if (!ai) throw new Error("Gemini Unavailable");
     
-    const prompt = `Chat History: ${JSON.stringify(history.slice(-4))}\n\nUser Question: ${message}\n\nLanguage: ${language}. Answer as 'shetiman' expert.`;
+    const prompt = `Chat History: ${JSON.stringify(history.slice(-4))}\n\nUser Question: ${message}\n\nLanguage: ${language}. Answer as 'shetiman' expert. 
+    
+    IMPORTANT: When providing structured data, comparisons, schedules, or lists of items with multiple attributes, ALWAYS use Markdown TABLES. 
+    Tables help farmers read information clearly like a professional poster.`;
     
     let contents: any;
     if (imageFile) {

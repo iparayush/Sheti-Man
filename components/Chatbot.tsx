@@ -156,8 +156,21 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
                     <img src={msg.image} alt="User upload" className="max-w-full h-auto object-cover" />
                   </div>
                 )}
-                <div className={`prose prose-sm max-w-none ${msg.sender === 'user' ? 'prose-invert' : 'prose-green'}`}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                <div className={`prose prose-sm max-w-none ${msg.sender === 'user' ? 'prose-invert' : 'prose-green'} markdown-body`}>
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        table: ({ children }) => (
+                          <div className="poster-table-container">
+                            <table className="poster-table">{children}</table>
+                          </div>
+                        ),
+                        th: ({ children }) => <th>{children}</th>,
+                        td: ({ children }) => <td>{children}</td>,
+                      }}
+                    >
+                      {msg.text}
+                    </ReactMarkdown>
                 </div>
                 
                 {msg.sender === 'bot' && (

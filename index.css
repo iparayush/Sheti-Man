@@ -8,3 +8,49 @@ body { overscroll-behavior-y: contain; background-color: #F8FAF8; font-size: 17p
 * { -webkit-tap-highlight-color: transparent; outline: none !important; }
 .prose { max-width: none; }
 .glass-effect { backdrop-filter: blur(8px); background-color: rgba(255, 255, 255, 0.8); }
+
+/* Professional Poster Table Styles */
+.poster-table-container {
+  @apply my-6 overflow-hidden rounded-3xl border-2 border-primary/20 shadow-2xl bg-white relative;
+}
+
+.poster-table-container::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none;
+}
+
+.poster-table {
+  @apply w-full border-collapse text-left;
+}
+
+.poster-table thead {
+  @apply bg-gradient-to-r from-secondary to-primary text-white;
+}
+
+.poster-table th {
+  @apply px-6 py-4 font-black uppercase tracking-widest text-[10px] border-b border-white/10;
+}
+
+.poster-table td {
+  @apply px-6 py-4 text-sm font-medium border-b border-gray-50 text-gray-700;
+}
+
+.poster-table tr:last-child td {
+  @apply border-b-0;
+}
+
+.poster-table tr:nth-child(even) {
+  @apply bg-gray-50/50;
+}
+
+.poster-table tr:hover {
+  @apply bg-primary/5 transition-colors;
+}
+
+.markdown-body h1 { @apply text-2xl font-black text-secondary mb-4 tracking-tight; }
+.markdown-body h2 { @apply text-xl font-black text-secondary mt-6 mb-3 tracking-tight; }
+.markdown-body h3 { @apply text-lg font-black text-secondary mt-4 mb-2 tracking-tight; }
+.markdown-body p { @apply mb-4 leading-relaxed; }
+.markdown-body ul { @apply list-disc ml-5 mb-4 space-y-2; }
+.markdown-body ol { @apply list-decimal ml-5 mb-4 space-y-2; }
+.markdown-body strong { @apply font-black text-secondary; }

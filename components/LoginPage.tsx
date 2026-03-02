@@ -17,8 +17,9 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<'login' | 'signup'>('login');
+  const [view, setView] = useState<'login' | 'signup' | 'forgot'>('login');
   const [isCheckingConnection, setIsCheckingConnection] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const checkConnection = async () => {
     setIsCheckingConnection(true);
@@ -72,9 +73,18 @@ const LoginPage: React.FC = () => {
     } catch (err: any) {
       console.error("Auth error details:", err);
       let msg = err.message || "Authentication failed";
-      if (msg.toLowerCase().includes("fetch")) {
-        msg = "Network Error: Unable to reach Supabase. This could be due to a slow connection, a browser extension blocking the request, or the Supabase project being paused.";
+      
+      // Map common Supabase errors to user-friendly messages
+      if (msg.toLowerCase().includes("invalid login credentials")) {
+        msg = "Wrong email or password. Please check your details and try again.";
+      } else if (msg.toLowerCase().includes("email not confirmed")) {
+        msg = "Please verify your email address before logging in. Check your inbox for a confirmation link.";
+      } else if (msg.toLowerCase().includes("fetch")) {
+        msg = "Network Error: Unable to reach Supabase. Please check your internet connection.";
+      } else if (msg.toLowerCase().includes("user already registered")) {
+        msg = "This email is already registered. Please try logging in instead.";
       }
+      
       setError(msg);
     } finally {
       // Ensure the processing state lasts between 1 and 2 seconds for a smoother feel
@@ -83,6 +93,24 @@ const LoginPage: React.FC = () => {
       if (elapsedTime < minDelay) {
         await new Promise(resolve => setTimeout(resolve, minDelay - elapsedTime));
       }
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+      if (resetError) throw resetError;
+      setResetSent(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to send reset link");
+    } finally {
       setLoading(false);
     }
   };
@@ -117,7 +145,56 @@ const LoginPage: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleEmailAuth} className="space-y-4">
+        {view === 'forgot' ? (
+          <div className="space-y-6">
+            {resetSent ? (
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-black text-secondary uppercase tracking-tight">Check your email</h2>
+                <p className="text-gray-500 text-sm">We've sent a password reset link to <span className="font-bold">{email}</span>.</p>
+                <button 
+                  onClick={() => { setView('login'); setResetSent(false); }}
+                  className="w-full py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest"
+                >
+                  Back to Login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Email Address</label>
+                  <input 
+                    type="email" 
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary/20 outline-none transition-all font-bold text-sm"
+                    required
+                  />
+                </div>
+                <button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full py-5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.25em] shadow-xl hover:bg-secondary transition-all disabled:bg-gray-200"
+                >
+                  {loading ? "Sending..." : "Send Reset Link"}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setView('login')}
+                  className="w-full text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-primary transition-colors"
+                >
+                  Cancel
+                </button>
+              </form>
+            )}
+          </div>
+        ) : (
+          <form onSubmit={handleEmailAuth} className="space-y-4">
           {view === 'signup' && (
             <>
               <div className="space-y-1">
@@ -185,6 +262,17 @@ const LoginPage: React.FC = () => {
               </button>
             </div>
           </div>
+          {view === 'login' && (
+            <div className="flex justify-end px-2">
+              <button 
+                type="button"
+                onClick={() => setView('forgot')}
+                className="text-[9px] font-black text-primary/60 hover:text-primary transition-colors uppercase tracking-widest"
+              >
+                Forgot Password?
+              </button>
+            </div>
+          )}
           <button 
             type="submit" 
             disabled={loading}
@@ -193,13 +281,14 @@ const LoginPage: React.FC = () => {
             {loading ? "Processing..." : (view === 'login' ? 'Sign In' : 'Create Account')}
           </button>
         </form>
+        )}
 
         <div className="flex flex-col sm:flex-row justify-center items-center mt-8 gap-4 sm:gap-8">
           <button 
             onClick={() => setView(view === 'login' ? 'signup' : 'login')}
             className="text-[10px] font-black text-primary/60 hover:text-primary transition-colors uppercase tracking-widest underline underline-offset-4"
           >
-            {view === 'login' ? "Need an account? Sign Up" : "Already have an account? Login"}
+            {view === 'forgot' ? "" : (view === 'login' ? "Need an account? Sign Up" : "Already have an account? Login")}
           </button>
           
           <button 
