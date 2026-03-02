@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { overscroll-behavior-y: contain; background-color: #F8FAF8; font-size: 17px; }
+::-webkit-scrollbar { display: none; }
+* { -webkit-tap-highlight-color: transparent; outline: none !important; }
+.prose { max-width: none; }
+.glass-effect { backdrop-filter: blur(8px); background-color: rgba(255, 255, 255, 0.8); }

@@ -75,25 +75,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        const newUser: User = {
-          id: session.user.id,
-          name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Farmer',
-          email: session.user.email || '',
-          picture: session.user.user_metadata.avatar_url,
-          phone: session.user.user_metadata.phone,
-          role: 'farmer',
-        };
-        setUser(newUser);
-        localStorage.setItem('user', JSON.stringify(newUser));
-      } else if (_event === 'SIGNED_OUT') {
-        setUser(null);
-        localStorage.removeItem('user');
-      }
-    });
+    if (supabase && supabase.auth) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (session?.user) {
+          const newUser: User = {
+            id: session.user.id,
+            name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Farmer',
+            email: session.user.email || '',
+            picture: session.user.user_metadata.avatar_url,
+            phone: session.user.user_metadata.phone,
+            role: 'farmer',
+          };
+          setUser(newUser);
+          localStorage.setItem('user', JSON.stringify(newUser));
+        } else if (_event === 'SIGNED_OUT') {
+          setUser(null);
+          localStorage.removeItem('user');
+        }
+      });
 
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    }
   }, []);
 
   const loginAsGuest = () => {

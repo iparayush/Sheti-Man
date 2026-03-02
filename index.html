@@ -6,73 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>shetiman - Organic Farming Expert</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: { sans: ['Inter', 'sans-serif'] },
-            fontSize: {
-              'xs': ['0.8125rem', { lineHeight: '1.125rem' }],
-              'sm': ['0.9375rem', { lineHeight: '1.375rem' }],
-              'base': ['1.0625rem', { lineHeight: '1.625rem' }],
-              'lg': ['1.1875rem', { lineHeight: '1.75rem' }],
-              'xl': ['1.375rem', { lineHeight: '1.875rem' }],
-              '2xl': ['1.625rem', { lineHeight: '2.125rem' }],
-              '3xl': ['2rem', { lineHeight: '2.5rem' }],
-            },
-            colors: {
-              primary: '#388E3C',
-              secondary: '#1B5E20',
-              accent: '#81C784',
-              gold: '#FBC02D',
-              sky: '#0288D1',
-              dark: '#1A231F',
-              background: '#F8FAF8',
-              card: '#FFFFFF',
-            },
-            animation: {
-              'fade-in': 'fadeIn 0.2s ease-out',
-              'slide-up': 'slideUp 0.3s ease-out',
-              'bounce-slow': 'bounce 2s infinite',
-              'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            },
-            keyframes: {
-              fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-              slideUp: { '0%': { transform: 'translateY(10px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
-            }
-          },
-        },
-      }
-    </script>
-    <style>
-      body { overscroll-behavior-y: contain; background-color: #F8FAF8; font-size: 17px; }
-      ::-webkit-scrollbar { display: none; }
-      * { -webkit-tap-highlight-color: transparent; outline: none !important; }
-      .prose { max-width: none; }
-      .glass-effect { backdrop-filter: blur(8px); background-color: rgba(255, 255, 255, 0.8); }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
-    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
-    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1",
-    "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.90.1"
-  }
-}
-</script>
-</head>
+  </head>
   <body class="bg-background text-dark font-sans antialiased">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>

@@ -179,6 +179,18 @@ const App: React.FC = () => {
         onUpdateQuantity={updateQuantity} 
         navigateTo={navigateTo}
       />
+
+      {/* Copyright Notice */}
+      <div className="fixed bottom-20 right-4 z-[40] pointer-events-none hidden md:block">
+        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest opacity-30">
+          ©all copyright rights by Ayush Ipar
+        </p>
+      </div>
+      <div className="md:hidden flex justify-center pb-24 pt-4">
+        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest opacity-30">
+          ©all copyright rights by Ayush Ipar
+        </p>
+      </div>
     </div>
   );
 };

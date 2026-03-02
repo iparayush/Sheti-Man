@@ -1,8 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 import { useLocalization } from '../context/LocalizationContext';
-
-declare const QRCode: any;
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -16,7 +15,7 @@ const QRCodeModal: React.FC<QRCodeModalProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen && canvasRef.current) {
-      QRCode.toCanvas(canvasRef.current, SHARE_URL, { width: 256, margin: 2 }, (error: Error | null) => {
+      QRCode.toCanvas(canvasRef.current, SHARE_URL, { width: 256, margin: 2 }, (error: Error | null | undefined) => {
         if (error) console.error(error);
       });
     }

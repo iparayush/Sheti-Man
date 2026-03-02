@@ -2,6 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './index.css';
 import { LocalizationProvider } from './context/LocalizationContext';
 import { AuthProvider } from './context/AuthContext';
 import { TaskProvider } from './context/TaskContext';
@@ -9,6 +10,7 @@ import { ProductProvider } from './context/ProductContext';
 import { OrderProvider } from './context/OrderContext';
 import { HistoryProvider } from './context/HistoryContext';
 import { CropsProvider } from './context/CropsContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error("Could not find root element");
@@ -18,20 +20,22 @@ const root = ReactDOM.createRoot(rootElement);
 // Wrap the App with all necessary providers for state management
 root.render(
   <React.StrictMode>
-    <LocalizationProvider>
-      <AuthProvider>
-        <ProductProvider>
-          <OrderProvider>
-            <HistoryProvider>
-              <CropsProvider>
-                <TaskProvider>
-                  <App />
-                </TaskProvider>
-              </CropsProvider>
-            </HistoryProvider>
-          </OrderProvider>
-        </ProductProvider>
-      </AuthProvider>
-    </LocalizationProvider>
+    <ErrorBoundary>
+      <LocalizationProvider>
+        <AuthProvider>
+          <ProductProvider>
+            <OrderProvider>
+              <HistoryProvider>
+                <CropsProvider>
+                  <TaskProvider>
+                    <App />
+                  </TaskProvider>
+                </CropsProvider>
+              </HistoryProvider>
+            </OrderProvider>
+          </ProductProvider>
+        </AuthProvider>
+      </LocalizationProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
