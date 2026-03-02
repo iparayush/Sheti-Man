@@ -108,3 +108,13 @@ export interface Order {
   status: OrderStatus;
   orderDate: string;
 }
+
+export interface HistoryItem {
+  id: string;
+  userId: string;
+  type: 'soil' | 'crop' | 'recommendation';
+  input: string;
+  result: string;
+  imageUrl?: string;
+  createdAt: string;
+}

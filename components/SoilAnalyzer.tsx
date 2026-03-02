@@ -7,9 +7,11 @@ import { analyzeCropImage, textToSpeech } from '../services/geminiService';
 import { playAudio } from '../utils/audio';
 import { useLocalization } from '../context/LocalizationContext';
 import { ExpertAdvice, AiThinkingLoader } from './DesignSystem';
+import { useHistory } from '../context/HistoryContext';
 
 const SoilAnalyzer: React.FC = () => {
   const { language, t } = useLocalization();
+  const { addHistory } = useHistory();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [prompt, setPrompt] = useState<string>('');
@@ -42,6 +44,14 @@ const SoilAnalyzer: React.FC = () => {
     try {
       const response = await analyzeCropImage(imageFile, prompt, language);
       setResult(response);
+      
+      // Save to history
+      await addHistory({
+        type: 'soil',
+        input: prompt || 'Soil analysis request',
+        result: response,
+        imageUrl: imagePreview
+      });
     } catch (err) {
       setError('Failed to analyze the image. Please try again.');
     } finally {

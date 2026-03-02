@@ -4,9 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { useLocalization } from '../context/LocalizationContext';
 import { AgriFertiLogo } from './icons';
 import { supabase } from '../services/supabaseClient';
+import { UserCircle } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const { t } = useLocalization();
+  const { loginAsGuest } = useAuth();
   
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -16,6 +18,25 @@ const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<'login' | 'signup'>('login');
+  const [isCheckingConnection, setIsCheckingConnection] = useState(false);
+
+  const checkConnection = async () => {
+    setIsCheckingConnection(true);
+    setError(null);
+    try {
+      const url = process.env.VITE_SUPABASE_URL || 'https://xbfpjrdiwzxnohbnpneg.supabase.co';
+      const res = await fetch(`${url}/auth/v1/health`, { method: 'GET' });
+      if (res.ok) {
+        alert("Connection Success: Supabase API is reachable!");
+      } else {
+        throw new Error(`API returned status ${res.status}`);
+      }
+    } catch (err: any) {
+      setError(`Connection Failed: ${err.message}. Please check if your Supabase project is active and the URL is correct.`);
+    } finally {
+      setIsCheckingConnection(false);
+    }
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +47,9 @@ const LoginPage: React.FC = () => {
     setLoading(true);
     setError(null);
 
+    const startTime = Date.now();
     try {
+      console.log("Attempting login for:", email);
       if (view === 'signup') {
         const { error: signUpError } = await supabase.auth.signUp({ 
           email, 
@@ -44,10 +67,22 @@ const LoginPage: React.FC = () => {
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
+        console.log("Login successful!");
       }
     } catch (err: any) {
-      setError(err.message || "Authentication failed");
+      console.error("Auth error details:", err);
+      let msg = err.message || "Authentication failed";
+      if (msg.toLowerCase().includes("fetch")) {
+        msg = "Network Error: Unable to reach Supabase. This could be due to a slow connection, a browser extension blocking the request, or the Supabase project being paused.";
+      }
+      setError(msg);
     } finally {
+      // Ensure the processing state lasts between 1 and 2 seconds for a smoother feel
+      const elapsedTime = Date.now() - startTime;
+      const minDelay = 1500; // 1.5 seconds
+      if (elapsedTime < minDelay) {
+        await new Promise(resolve => setTimeout(resolve, minDelay - elapsedTime));
+      }
       setLoading(false);
     }
   };
@@ -68,8 +103,17 @@ const LoginPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[11px] font-bold uppercase tracking-wider animate-fade-in text-center">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-[11px] font-bold uppercase tracking-wider animate-fade-in text-center flex flex-col gap-2">
+            <span>{error}</span>
+            {error.toLowerCase().includes("network") && (
+              <button 
+                onClick={checkConnection}
+                disabled={isCheckingConnection}
+                className="text-[9px] underline opacity-70 hover:opacity-100"
+              >
+                {isCheckingConnection ? "Checking..." : "Run Network Diagnostic"}
+              </button>
+            )}
           </div>
         )}
 
@@ -150,12 +194,20 @@ const LoginPage: React.FC = () => {
           </button>
         </form>
 
-        <div className="flex justify-center mt-8">
+        <div className="flex flex-col sm:flex-row justify-center items-center mt-8 gap-4 sm:gap-8">
           <button 
             onClick={() => setView(view === 'login' ? 'signup' : 'login')}
             className="text-[10px] font-black text-primary/60 hover:text-primary transition-colors uppercase tracking-widest underline underline-offset-4"
           >
             {view === 'login' ? "Need an account? Sign Up" : "Already have an account? Login"}
+          </button>
+          
+          <button 
+            onClick={loginAsGuest}
+            className="text-[10px] font-black text-secondary/60 hover:text-secondary transition-colors uppercase tracking-widest flex items-center gap-1.5"
+          >
+            <UserCircle size={14} />
+            Try as Guest
           </button>
         </div>
       </div>

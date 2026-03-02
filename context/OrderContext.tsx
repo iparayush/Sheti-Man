@@ -57,7 +57,13 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [user]);
 
   const addOrder = async (orderData: Omit<Order, 'id' | 'orderDate'>) => {
-    const { data: { session } } = await supabase.auth.getSession();
+    let session;
+    try {
+      const result = await supabase.auth.getSession();
+      session = result.data.session;
+    } catch (err) {
+      console.error("Supabase get session failed:", err);
+    }
     
     // Fallback for guest or disconnected users
     if (!session || !user || user.id === 'guest') {

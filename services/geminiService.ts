@@ -6,7 +6,7 @@ import { RecommendationFormState, CalculatorFormState, Weather, Language } from 
  * Validates and retrieves the Google Gemini Client
  */
 const getGeminiClient = () => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey === 'undefined' || apiKey.trim() === '') return null;
   return new GoogleGenAI({ apiKey: apiKey.trim() });
 };
@@ -38,23 +38,28 @@ const callOpenRouter = async (prompt: string, language: Language, history: any[]
     messages.push({ role: "user", content: prompt });
   }
 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": window.location.origin,
-      "X-Title": "shetiman-agri"
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.0-flash-lite-001", // High reliability backup
-      messages
-    })
-  });
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": window.location.origin,
+        "X-Title": "shetiman-agri"
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.0-flash-lite-001", // High reliability backup
+        messages
+      })
+    });
 
-  if (!response.ok) throw new Error("Backup AI Failed");
-  const data = await response.json();
-  return data.choices[0].message.content;
+    if (!response.ok) throw new Error("Backup AI Failed");
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (err) {
+    console.error("OpenRouter fetch failed:", err);
+    throw err;
+  }
 };
 
 /**
@@ -142,8 +147,34 @@ export const calculateFertilizer = async (formData: CalculatorFormState, languag
  */
 export const getWeatherInfo = async (lat: number, lng: number, language: Language): Promise<Weather> => {
   const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m&timezone=auto`;
-  const res = await fetch(weatherUrl);
-  const raw = await res.json();
+  let raw;
+  let attempts = 0;
+  const maxAttempts = 3;
+  
+  while (attempts < maxAttempts) {
+    try {
+      const res = await fetch(weatherUrl);
+      if (!res.ok) throw new Error(`Weather API failed with status ${res.status}`);
+      raw = await res.json();
+      break; // Success
+    } catch (err) {
+      attempts++;
+      console.warn(`Weather fetch attempt ${attempts} failed:`, err);
+      if (attempts === maxAttempts) {
+        console.error("Max weather fetch attempts reached.");
+        return {
+          temperature: 0,
+          condition: "Unknown",
+          windSpeed: 0,
+          windDirection: "N/A",
+          humidity: 0,
+          recommendation: "हवामान माहिती उपलब्ध नाही. (Network Error)",
+          location: "Unknown"
+        };
+      }
+      await new Promise(r => setTimeout(r, 1000 * attempts)); // Exponential backoff
+    }
+  }
   const { temperature_2m, relative_humidity_2m, weather_code, wind_speed_10m, wind_direction_10m } = raw.current;
 
   const prompt = `Weather Data: Temp ${temperature_2m}C, Humidity ${relative_humidity_2m}%, Wind Speed ${wind_speed_10m}km/h, Wind Direction ${wind_direction_10m} degrees. 

@@ -1,11 +1,14 @@
-import React from 'react';
-import { User, Settings, CreditCard, HelpCircle, LogOut, ChevronRight, MapPin, Phone, Mail } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Settings, CreditCard, HelpCircle, LogOut, ChevronRight, MapPin, Phone, Mail, History, Trash2, ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLocalization } from '../context/LocalizationContext';
+import { useHistory } from '../context/HistoryContext';
 
 const ProfilePage: React.FC = () => {
   const { user, logout } = useAuth();
   const { t } = useLocalization();
+  const { history, deleteHistory, loading: historyLoading } = useHistory();
+  const [showHistory, setShowHistory] = useState(false);
 
   const menuItems = [
     { icon: Settings, label: 'Settings', color: 'bg-blue-100 text-blue-600' },
@@ -54,6 +57,58 @@ const ProfilePage: React.FC = () => {
       </div>
 
       <div className="space-y-4 mb-8">
+        <button 
+          onClick={() => setShowHistory(!showHistory)}
+          className="w-full bg-white rounded-3xl p-6 border border-black/5 shadow-sm hover:shadow-md transition-all flex items-center justify-between group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-2xl bg-purple-100 text-purple-600">
+              <History size={20} />
+            </div>
+            <span className="text-lg font-black text-dark tracking-tight">AI Analysis History</span>
+          </div>
+          <ChevronRight className={`text-gray-300 group-hover:text-primary transition-all ${showHistory ? 'rotate-90' : ''}`} />
+        </button>
+
+        {showHistory && (
+          <div className="space-y-3 animate-slide-up">
+            {historyLoading ? (
+              <div className="text-center py-8 text-gray-400 font-bold uppercase tracking-widest text-xs">Loading History...</div>
+            ) : history.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-gray-400 font-bold uppercase tracking-widest text-xs">No history found</div>
+            ) : (
+              history.map((item) => (
+                <div key={item.id} className="bg-white p-5 rounded-3xl border border-black/5 shadow-sm flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest ${
+                        item.type === 'soil' ? 'bg-orange-100 text-orange-600' :
+                        item.type === 'crop' ? 'bg-emerald-100 text-emerald-600' :
+                        'bg-blue-100 text-blue-600'
+                      }`}>
+                        {item.type}
+                      </span>
+                      <span className="text-[10px] text-gray-400 font-bold">{new Date(item.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <button onClick={() => deleteHistory(item.id)} className="text-gray-300 hover:text-red-500 transition-colors">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <p className="text-xs font-black text-dark tracking-tight line-clamp-1">{item.input}</p>
+                  <div className="flex items-center gap-2">
+                    {item.imageUrl && (
+                      <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-black/5">
+                        <img src={item.imageUrl} alt="Analysis" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <p className="text-[10px] text-gray-500 font-medium line-clamp-2 leading-relaxed">{item.result}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
         {menuItems.map((item, index) => (
           <button key={index} className="w-full bg-white rounded-3xl p-6 border border-black/5 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
             <div className="flex items-center gap-4">

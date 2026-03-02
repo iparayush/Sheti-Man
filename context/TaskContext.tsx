@@ -28,33 +28,46 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       setLoading(true);
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .order('is_completed', { ascending: true })
-        .order('due_date', { ascending: true });
+      try {
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*')
+          .order('is_completed', { ascending: true })
+          .order('due_date', { ascending: true });
 
-      if (error) {
-        console.error("Error fetching tasks:", error);
-      } else {
-        // Map DB snake_case to JS camelCase
-        const mapped = (data || []).map((t: any) => ({
-          id: t.id,
-          text: t.text,
-          dueDate: t.due_date,
-          isCompleted: t.is_completed,
-          userId: t.user_id
-        }));
-        setTasks(mapped);
+        if (error) {
+          console.error("Error fetching tasks:", error);
+        } else {
+          // Map DB snake_case to JS camelCase
+          const mapped = (data || []).map((t: any) => ({
+            id: t.id,
+            text: t.text,
+            dueDate: t.due_date,
+            isCompleted: t.is_completed,
+            userId: t.user_id
+          }));
+          setTasks(mapped);
+        }
+      } catch (err) {
+        console.error("Supabase fetch tasks failed:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchTasks();
   }, [user]);
 
   const addTask = async (text: string, dueDate: string | null) => {
-    const { data: { session } } = await supabase.auth.getSession();
+    let session;
+    try {
+      const result = await supabase.auth.getSession();
+      session = result.data.session;
+    } catch (err) {
+      console.error("Supabase get session failed:", err);
+      return;
+    }
+    
     if (!session) return;
 
     const newTaskData = {
@@ -65,18 +78,22 @@ export const TaskProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       user_id: session.user.id,
     };
 
-    const { error } = await supabase.from('tasks').insert([newTaskData]);
-    
-    if (error) {
-      console.error("Error adding task:", error);
-    } else {
-      setTasks(prev => [...prev, {
-        id: newTaskData.id,
-        text: newTaskData.text,
-        dueDate: newTaskData.due_date,
-        isCompleted: newTaskData.is_completed,
-        userId: session.user.id
-      }]);
+    try {
+      const { error } = await supabase.from('tasks').insert([newTaskData]);
+      
+      if (error) {
+        console.error("Error adding task:", error);
+      } else {
+        setTasks(prev => [...prev, {
+          id: newTaskData.id,
+          text: newTaskData.text,
+          dueDate: newTaskData.due_date,
+          isCompleted: newTaskData.is_completed,
+          userId: session.user.id
+        }]);
+      }
+    } catch (err) {
+      console.error("Supabase add task failed:", err);
     }
   };
 

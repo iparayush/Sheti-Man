@@ -114,7 +114,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
   };
 
   return (
-    <div className="h-screen w-screen bg-background flex flex-col font-sans animate-fade-in overflow-hidden">
+    <div className="h-full w-full bg-background flex flex-col font-sans animate-fade-in overflow-hidden">
       <header className="bg-white border-b border-gray-100 shadow-sm z-10 shrink-0">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center max-w-4xl">
           <div className="flex items-center space-x-3">
@@ -238,6 +238,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ navigateTo }) => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder={t('chatbot.placeholder')}
+                autoFocus
                 className="w-full pl-5 pr-14 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-primary/5 focus:outline-none transition-all font-bold text-sm"
                 disabled={loading}
               />

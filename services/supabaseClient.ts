@@ -5,4 +5,16 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://xbfpjrdiwzxnohbnpneg.supabase.co';
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhiZnBqcmRpd3p4bm9oYm5wbmVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1NzAyODIsImV4cCI6MjA4NDE0NjI4Mn0.rpUzG3dLR7nby8iY4HX6Nyr6Xt8mFTFSIDUTPiLWN68';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!supabaseUrl || supabaseUrl === 'undefined') {
+  console.error("Supabase URL is missing or invalid!");
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'shetiman-auth-token',
+    storage: window.localStorage, // Explicitly use localStorage
+  }
+});

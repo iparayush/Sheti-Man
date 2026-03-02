@@ -30,30 +30,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.user) {
-        const newUser: User = {
-          id: session.user.id,
-          name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Farmer',
-          email: session.user.email || '',
-          picture: session.user.user_metadata.avatar_url,
-          phone: session.user.user_metadata.phone,
-          role: 'farmer',
-        };
-        setUser(newUser);
-        localStorage.setItem('user', JSON.stringify(newUser));
-      } else {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          const newUser: User = {
+            id: session.user.id,
+            name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Farmer',
+            email: session.user.email || '',
+            picture: session.user.user_metadata.avatar_url,
+            phone: session.user.user_metadata.phone,
+            role: 'farmer',
+          };
+          setUser(newUser);
+          localStorage.setItem('user', JSON.stringify(newUser));
+        } else {
+          const stored = localStorage.getItem('user');
+          if (stored) {
+              const parsed = JSON.parse(stored);
+              if (parsed.email !== 'guest@shetiman.ai' && !session) {
+                  setUser(null);
+                  localStorage.removeItem('user');
+              }
+          }
+        }
+      } catch (error) {
+        console.error("Supabase session check failed:", error);
+        // If Supabase fails, we still want to allow guest login if they have a stored guest session
         const stored = localStorage.getItem('user');
         if (stored) {
+          try {
             const parsed = JSON.parse(stored);
-            if (parsed.email !== 'guest@shetiman.ai' && !session) {
-                setUser(null);
-                localStorage.removeItem('user');
+            if (parsed.email === 'guest@shetiman.ai') {
+              setUser(parsed);
             }
+          } catch (e) {
+            setUser(null);
+          }
         }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkSession();

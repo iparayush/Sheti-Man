@@ -154,18 +154,22 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <Header 
-        onBack={goBack} 
-        showBackButton={showBackButton} 
-        navigateTo={navigateTo} 
-        onQRCodeClick={() => setIsQRCodeModalOpen(true)} 
-      />
+      {currentPage !== Page.CHATBOT && (
+        <Header 
+          onBack={goBack} 
+          showBackButton={showBackButton} 
+          navigateTo={navigateTo} 
+          onQRCodeClick={() => setIsQRCodeModalOpen(true)} 
+        />
+      )}
       
-      <main className="flex-grow">
+      <main className={currentPage === Page.CHATBOT ? 'h-screen' : 'flex-grow'}>
         {renderPage()}
       </main>
 
-      <BottomNavigation currentPage={currentPage} onNavigate={navigateTo} />
+      {currentPage !== Page.CHATBOT && (
+        <BottomNavigation currentPage={currentPage} onNavigate={navigateTo} />
+      )}
       
       <QRCodeModal isOpen={isQRCodeModalOpen} onClose={() => setIsQRCodeModalOpen(false)} />
       <CartModal 

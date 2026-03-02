@@ -8,9 +8,11 @@ import { RecommendationFormState } from '../types';
 import { SpeakerIcon, ScienceIcon } from './icons';
 import { useLocalization } from '../context/LocalizationContext';
 import { ExpertAdvice, ThinkingState } from './DesignSystem';
+import { useHistory } from '../context/HistoryContext';
 
 const RecommendationForm: React.FC = () => {
   const { language, t } = useLocalization();
+  const { addHistory } = useHistory();
   const [formData, setFormData] = useState<RecommendationFormState>({
     cropName: 'Tomato',
     soilPH: '6.5',
@@ -38,6 +40,13 @@ const RecommendationForm: React.FC = () => {
     try {
       const response = await getFertilizerRecommendation(formData, language);
       setResult(response);
+      
+      // Save to history
+      await addHistory({
+        type: 'recommendation',
+        input: `Crop: ${formData.cropName}, pH: ${formData.soilPH}, Climate: ${formData.climate}`,
+        result: response.text
+      });
     } catch (err) {
       setError('Failed to get recommendation. Please try again.');
     } finally {
